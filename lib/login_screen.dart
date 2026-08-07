@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
                       );
                     },
                     child: const Text('Δεν έχεις λογαριασμό; Εγγραφή'),

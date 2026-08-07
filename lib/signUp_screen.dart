@@ -26,6 +26,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _errorMessage = null;
     });
 
+    // Δημιουργήσουμε νέο χρήστη με email και κωδικό
     try {
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -48,7 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
-
+  // Dispose των controllers όταν το widget καταστρέφεται
   @override
   void dispose() {
     _emailController.dispose();
@@ -56,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(

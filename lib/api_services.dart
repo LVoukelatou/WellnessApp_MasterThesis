@@ -12,7 +12,7 @@ class ApiService {
     required int steps,
     required double sleepHours,
     required double heartRate,
-    required double hrv}) //σε {} για να μπορούμε να περάσουμε τα ορίσματα με όποια σειρά θέλουμε
+    required double hrv, required double stepsTarget, required double sleepTarget, required double hrTarget, required double hrvTarget}) //σε {} για να μπορούμε να περάσουμε τα ορίσματα με όποια σειρά θέλουμε
     async {
     try {
       final response = await http.post(

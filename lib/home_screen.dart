@@ -5,7 +5,6 @@ import "health_service.dart"; // Για την ανάκτηση δεδομένω
 import 'api_services.dart'; // Για την επικοινωνία με το Flask API
 import 'stress_chart.dart'; // Για το γράφημα του επιπέδου στρες
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key); // Constructor για το HomeScreen
 
@@ -54,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Υπολογίζουμε αν είναι πρωί (από τις 5 μέχρι τις 14 γιατί μπορεί κάποιος να ξεκινάει δουλειά αργά) ή απόγευμα μόλις ανοίγει η οθόνη
     _isMorning =  DateTime.now().hour >= 5 && DateTime.now().hour < 14;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((context) async {
     await Future.delayed(const Duration(milliseconds: 300));
     _fetchAndSyncStarting();}); // Καλούμε τη μέθοδο για να ανακτήσουμε τα δεδομένα υγείας και να ενημερώσουμε τις μεταβλητές της οθόνης
     _hasCompletedCurrentCheckIn();
@@ -82,7 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
       });
 
       if (_permissionsGranted) {
-        final apiService = ApiService(); 
+       final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get();
+        final goals = (userDoc.data()?['goals'] as Map<String, dynamic>?) ?? {};
+        final apiService = ApiService();
         final result = await apiService.predictStress(
         isMorning: _isMorning,
         vibeCheck1: 2,
@@ -92,6 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
         sleepHours: _actualSleepHours,
         heartRate: _actualHeartRate,
         hrv: _actualHRV,
+        stepsTarget: (goals['steps'] as num?)?.toDouble() ?? 10000,
+        sleepTarget: (goals['sleep_hours'] as num?)?.toDouble() ?? 8.0,
+        hrTarget: (goals['heart_rate'] as num?)?.toDouble() ?? 70,
+        hrvTarget: (goals['hrv'] as num?)?.toDouble() ?? 50,
       );
 
       setState(() {
@@ -130,6 +138,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final apiService = ApiService(); // Δημιουργούμε ένα instance του ApiService για να καλέσουμε το Flask API
+      final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get();
+      final goals = (userDoc.data()?['goals'] as Map<String, dynamic>?) ?? {};
       final result = await apiService.predictStress(
         isMorning: _isMorning,
         vibeCheck1: _vibeCheck1,
@@ -139,7 +152,11 @@ class _HomeScreenState extends State<HomeScreen> {
         sleepHours: _actualSleepHours,
         heartRate: _actualHeartRate,
         hrv: _actualHRV,
-      );
+        stepsTarget: (goals['steps'] as num?)?.toDouble() ?? 10000,
+        sleepTarget: (goals['sleep_hours'] as num?)?.toDouble() ?? 8.0,
+        hrTarget: (goals['heart_rate'] as num?)?.toDouble() ?? 70,
+        hrvTarget: (goals['hrv'] as num?)?.toDouble() ?? 50,
+    );
 
       setState(() {
         _backendPredictedStress = (result['health_score'] as num?)?.toDouble() ?? 0.0; // Λαμβάνουμε την πρόβλεψη στρες από το API και την μετατρέπουμε σε double, αν δεν υπάρχει, θέτουμε 0.0
@@ -403,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 223, 215, 215),
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(0, 22, 190, 42),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
