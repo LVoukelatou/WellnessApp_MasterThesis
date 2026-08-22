@@ -36,7 +36,7 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final step = _steps[_currentStep];
+    final step = _steps[_currentStep]; //δες σε ποιο βήμα είναι για να εμφανιστούν τα σωστά στοιχεία
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 223, 215, 215),
@@ -52,7 +52,7 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
             children: [
               const SizedBox(height: 20),
               Text(
-                'Βήμα ${_currentStep + 1} από ${_steps.length}',
+                'Βήμα ${_currentStep + 1} από 5',
                 style: TextStyle(color: Colors.grey.shade600),
               ),
               const SizedBox(height: 40),
@@ -63,7 +63,7 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: const Color.fromARGB(255, 25, 96, 25).withOpacity(0.15),
+                        backgroundColor: const Color.fromARGB(255, 25, 96, 25),
                         child: Icon(step.icon, size: 50, color: const Color.fromARGB(255, 25, 96, 25)),
                       ),
                       const SizedBox(height: 24),

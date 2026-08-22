@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 class BreathingExerciseScreen extends StatefulWidget {
-  const BreathingExerciseScreen({Key? key}) : super(key: key);
+  const BreathingExerciseScreen({super.key});
 
   @override
   State<BreathingExerciseScreen> createState() => _BreathingExerciseScreenState();
@@ -10,9 +10,10 @@ class BreathingExerciseScreen extends StatefulWidget {
 
 enum BreathPhase { inhale, holdFull, exhale, holdEmpty }
 
+// Η οθόνη για την άσκηση αναπνοής
 class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late AnimationController _controller; 
   late Animation<double> _scaleAnimation;
 
   BreathPhase _currentPhase = BreathPhase.inhale;
@@ -33,7 +34,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this,
+      vsync: this, // συγχρονίζει το animation με τον ρυθμό ανανέωσης της οθόνης, και το σταματάει αυτόματα όταν η οθόνη δεν είναι ορατή
       duration: const Duration(seconds: _phaseSeconds),
     );
     _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
@@ -41,6 +42,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
     );
   }
 
+  // Ξεκινάει την άσκηση αναπνοής
   void _startExercise() {
     setState(() {
       _isRunning = true;
@@ -49,7 +51,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
     });
     _runPhase();
   }
-
+  // Σταματάει την άσκηση αναπνοής
   void _stopExercise() {
     _phaseTimer?.cancel();
     _controller.stop();
@@ -61,18 +63,19 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
   void _runPhase() {
     if (!_isRunning) return;
 
+    // Ελέγχουμε ποια φάση είναι και ξεκινάμε το animation ανάλογα
     switch (_currentPhase) {
       case BreathPhase.inhale:
         _controller.forward(from: 0.0); // κύκλος μεγαλώνει
         break;
       case BreathPhase.holdFull:
-        // παραμένει μεγάλος, δεν κινείται
+        // παραμένει μεγάλος
         break;
       case BreathPhase.exhale:
         _controller.reverse(from: 1.0); // κύκλος μικραίνει
         break;
       case BreathPhase.holdEmpty:
-        // παραμένει μικρός, δεν κινείται
+        // παραμένει μικρός
         break;
     }
 
@@ -87,7 +90,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
       _runPhase();
     });
   }
-
+  // Επιστρέφει την επόμενη φάση της αναπνοής
   BreathPhase _nextPhase(BreathPhase current) {
     switch (current) {
       case BreathPhase.inhale:
@@ -141,7 +144,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                       height: 250 * _scaleAnimation.value,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color.fromARGB(255, 25, 96, 25).withOpacity(0.2),
+                        color: const Color.fromARGB(255, 25, 96, 25),
                         border: Border.all(
                           color: const Color.fromARGB(255, 25, 96, 25),
                           width: 3,

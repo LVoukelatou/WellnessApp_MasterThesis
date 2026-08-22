@@ -4,6 +4,7 @@ import 'package:flutter/material.dart'; // Για τα widgets και το UI
 import "health_service.dart"; // Για την ανάκτηση δεδομένων υγείας
 import 'api_services.dart'; // Για την επικοινωνία με το Flask API
 import 'stress_chart.dart'; // Για το γράφημα του επιπέδου στρες
+import 'stress_ring.dart'; // Για το κύκλο του επιπέδου στρες
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key); // Constructor για το HomeScreen
@@ -501,7 +502,8 @@ class _HomeScreenState extends State<HomeScreen> {
               
               const SizedBox(height: 20), // Λίγο κενό
               
-              const StressChart(),
+              StressRing(stressScore: _backendPredictedStress),
+              //const StressChart(),
               
               const SizedBox(height: 20),
 

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AiCoachService {
-  final String baseUrl = 'http://192.168.2.9:5000'; 
-
+  //final String baseUrl = 'http://192.168.2.9:5000'; //σπιτι
+  final String baseUrl = 'http://localhost:5000'; // για test στον υπολογιστή
   Future<String> sendMessage(String message, List<Map<String, String>> history) async {
     try {
       final response = await http.post(

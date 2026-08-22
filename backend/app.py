@@ -69,7 +69,7 @@ def ai_coach():
 
     try:
         completion = groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=messages, # ολόκληρη την λίστα με το ιστορικό
             temperature=0.7, # ζητάμε μια πιο δημιουργική απάντηση (0-1 κλιμακα)
             max_tokens=500, # περίπου 350-400 λέξεις
@@ -77,6 +77,7 @@ def ai_coach():
         reply = completion.choices[0].message.content # παίρνουμε την 1η από την λίστα απαντήσεων, το μήνυμά της και το περιεχόμενο κειμένου
         return jsonify({"reply": reply})
     except Exception as e:
+        print("Σφάλμα AI Coach:", e)
         return jsonify({"error": str(e)}), 500
     
 # Εκκίνηση του Flask 

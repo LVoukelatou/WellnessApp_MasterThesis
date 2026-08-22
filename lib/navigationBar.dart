@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart'; 
 import 'ai_coach_screen.dart';
 import 'relax_screen.dart'; 
+import 'history_screen.dart';
 
 class RootNavigation extends StatefulWidget {
   const RootNavigation({Key? key}) : super(key: key);
@@ -16,7 +17,8 @@ class _RootNavigationState extends State<RootNavigation> {
    // Κρατάει τις οθόνες φορτωμένες, ώστε να μη χάνεται το chat όταν αλλάζουμε tab
   final List<Widget> _screens = const [
     HomeScreen(),
-    AiCoachScreen(),
+    HistoryScreen(),
+    AiCoachScreen(), 
     RelaxScreen(),
   ];
 
@@ -43,6 +45,11 @@ class _RootNavigationState extends State<RootNavigation> {
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Αρχική',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart_outlined),
+            activeIcon: Icon(Icons.bar_chart),
+            label: 'Ιστορικό',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.psychology_alt_outlined),

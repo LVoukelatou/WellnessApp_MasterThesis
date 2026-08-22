@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  //final String apiUrl = 'http://10.0.2.2:5000/analyze_stress';
-  final String apiUrl = 'http://192.168.2.9:5000/analyze_stress';
+  //final String apiUrl = 'http://10.0.2.2:5000/analyze_stress'; // μόνο για test στον emulator
+  //final String apiUrl = 'http://192.168.2.9:5000/analyze_stress'; //σπιτι
+  final String apiUrl = 'http://localhost:5000/analyze_stress'; // για test στον υπολογιστή
   Future<Map<String, dynamic>> predictStress({
     required bool isMorning,
     required int vibeCheck1,
@@ -30,7 +31,11 @@ class ApiService {
             "sleep_hours": sleepHours,
             "heart_rate": heartRate,
             "hrv": hrv
-          }
+          },
+          "steps_goal": stepsTarget,
+          "sleep_goal": sleepTarget,
+          "hr_goal": hrTarget,
+          "hrv_goal": hrvTarget,
         }),
       );
 

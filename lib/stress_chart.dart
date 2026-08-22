@@ -20,7 +20,7 @@ class StressChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Το τελευταίο 24ωρο με μια ματιά', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('Η εβδομάδα σου με μια ματιά', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           SizedBox(
             height: 200, // Ύψος του γραφήματος
@@ -29,7 +29,7 @@ class StressChart extends StatelessWidget {
             .collection('users')
             .doc(FirebaseAuth.instance.currentUser!.uid)
             .collection('check_ins')
-            .where( 'timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 1)))) //Φιλτράρουμε τα check-ins των τελευταίων 24 ωρών
+            .where( 'timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(DateTime.now().subtract(const Duration(days: 7)))) //Φιλτράρουμε τα check-ins των τελευταίων 7 ημερών
             .orderBy('timestamp', descending: false) //Χρονική σειρά από παλιότερα σε νεότερα
             .snapshots(),
             builder: (context, snapshot) {
