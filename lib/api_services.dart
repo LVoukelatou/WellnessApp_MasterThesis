@@ -10,10 +10,15 @@ class ApiService {
     required int vibeCheck1,
     required int vibeCheck2,
     required int vibeCheck3,
-    required int steps,
-    required double sleepHours,
-    required double heartRate,
-    required double hrv, required double stepsTarget, required double sleepTarget, required double hrTarget, required double hrvTarget}) //σε {} για να μπορούμε να περάσουμε τα ορίσματα με όποια σειρά θέλουμε
+    int? steps,
+    double? sleepHours,
+    double? heartRate,
+    double? hrv, 
+    required double stepsTarget, 
+    required double sleepTarget, 
+    required double hrTarget, 
+    required double hrvTarget
+    }) //σε {} για να μπορούμε να περάσουμε τα ορίσματα με όποια σειρά θέλουμε
     async {
     try {
       final response = await http.post(

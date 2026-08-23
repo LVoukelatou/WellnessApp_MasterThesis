@@ -36,17 +36,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     });
     _textController.clear();
     _scrollToBottom();
+    final history = _buildRecentHistory();
 
-    // φτιάχνουμε το ιστορικό με τα τελευταία 10 μηνύματα για το context
-    final history = _messages
-        .take(_messages.length - 1)
-        .toList()
-        .reversed
-        .take(10)
-        .toList()
-        .reversed
-        .map((m) => {'role': m.isUser ? 'user' : 'assistant', 'content': m.text})
-        .toList();
     // στέλνουμε το μήνυμα στο service και περιμένουμε την απάντηση
     try {
       final reply = await _service.sendMessage(text, history);
@@ -65,6 +56,33 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       _scrollToBottom();
     }
   } 
+  // φτιάχνουμε το ιστορικό με τα τελευταία 10 μηνύματα για το context πλην του πιο πρόσφατου (αυτό στέλνεται ξεχωριστά ως τρέχον μήνυμα)
+      List<Map<String, String>> _buildRecentHistory() {
+
+    // αφαιρούμε το τελευταίο μήνυμα από τη λίστα
+    List<ChatMessage> messagesWithoutLast = [];
+    for (int i = 0; i < _messages.length - 1; i++) {
+      messagesWithoutLast.add(_messages[i]);
+    }
+
+    // κρατάμε τα τελευταία 10
+    List<ChatMessage> lastTenMessages = [];
+    int startIndex = messagesWithoutLast.length > 10 ? messagesWithoutLast.length - 10 : 0;
+    for (int i = startIndex; i < messagesWithoutLast.length; i++) {
+      lastTenMessages.add(messagesWithoutLast[i]);
+    }
+
+    // τα μετατρέπουμε σε μορφή που καταλαβαίνει το Groq
+    List<Map<String, String>> history = [];
+    for (final message in lastTenMessages) {
+      history.add({
+        'role': message.isUser ? 'user' : 'assistant',
+        'content': message.text,
+      });
+    }
+
+    return history;
+  }  
   // Scroll στο τέλος του chat όταν έρχεται νέο μήνυμα
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {

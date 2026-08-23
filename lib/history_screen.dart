@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'stress_chart.dart';
+import 'history_calendar.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -19,6 +20,8 @@ class HistoryScreen extends StatelessWidget {
           child: Column(
             children: const [
               StressChart(),
+              SizedBox(height: 16.0),
+              HistoryCalendar(),
             ],
           ),
         ),

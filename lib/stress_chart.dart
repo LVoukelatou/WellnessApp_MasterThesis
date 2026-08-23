@@ -69,28 +69,54 @@ class StressChart extends StatelessWidget {
                   titlesData: FlTitlesData(
                         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false), //δεν εμφανίζουμε τίτλους στον άξονα y
-                      ),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 28,
+                            interval: 2, 
+                            getTitlesWidget: (value, meta) {
+                              return Text(
+                                value.toInt().toString(),
+                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                              );
+                            },
+                          ),
+                        ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) { //φτιάχνουμε τις ετικέτες χρόνου στον άξονα x
+                        reservedSize: 46,
+                        getTitlesWidget: (value, meta) { //φτιάχνουμε τις ετικέτες ημέρας+ώρας στον άξονα x, σε 2 γραμμές
                           int index = value.toInt();
                           if (index >= 0 && index < docs.length) {
                             final data = docs[index].data() as Map<String, dynamic>;
                             final Timestamp? timeSt = data['timestamp'] as Timestamp?; 
                             if (timeSt != null) {
                               final date = timeSt.toDate();
-                              final formattedTime = '${date.hour}:${date.minute.toString().padLeft(2, '0')}'; //Μορφοποίηση της ώρας σε ώρα:λεπτά
+
+                              const shortDayNames = ['Δε', 'Τρ', 'Τε', 'Πε', 'Πα', 'Σα', 'Κυ'];
+                              final dayName = shortDayNames[date.weekday - 1];
+                              final formattedTime = '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+
                               return Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(formattedTime, style: const TextStyle(fontSize: 10  ,color: Colors.grey)),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      dayName,
+                                      style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.w600),
+                                    ),
+                                    Text(
+                                      formattedTime,
+                                      style: const TextStyle(fontSize: 9, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
                               );
                             }
                           }
-                          return const Text(' '); //Επιστρέφουμε κενό αν δεν υπάρχει έγκυρη ετικέτα
+                          return const Text(' ');
                         },
                       ),
                     ),

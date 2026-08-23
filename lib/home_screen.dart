@@ -24,10 +24,10 @@ class _HomeScreenState extends State<HomeScreen> {
   
   // Μεταβλητές για την αποθήκευση των δεδομένων υγείας που θα ανακτηθούν από το Health Connect
   bool _permissionsGranted = false;
-  int _actualSteps = 0;
-  double _actualHRV = 0.0;
-  double _actualHeartRate = 0.0;
-  double _actualSleepHours = 0.0;
+  int? _actualSteps; // nullable στην περίπτωση που δεν υπάρχουν δεδομένα
+  double? _actualHRV;
+  double? _actualHeartRate; 
+  double? _actualSleepHours;
   
   // Μεταβλητές για την πρόβλεψη του επιπέδου στρες από το Flask API
   bool _isLoading = false;
@@ -68,14 +68,14 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν ενημερώνουμε το state για να αποφύγουμε σφάλματα
       
       setState(() {
-        // Ενημερώνουμε τις μεταβλητές με τα δεδομένα που ανακτήθηκαν, αν δεν υπάρχουν δεδομένα, θέτουμε τις τιμές σε 0 ή 0.0
+        // Ενημερώνουμε τις μεταβλητές με τα δεδομένα που ανακτήθηκαν, αν δεν υπάρχουν δεδομένα τις αφήνουμε null
         bool hasPermissions = healthData['permissionsGranted'] == true;
         if (hasPermissions) {
           _permissionsGranted = true;
-          _actualSteps = healthData['steps'] ?? 0;
-          _actualHRV = healthData['hrv'] ?? 0.0;
-          _actualHeartRate = healthData['heartRate'] ?? 0.0;
-          _actualSleepHours = healthData['sleepHours'] ?? 0.0;
+          _actualSteps = healthData['steps'];
+          _actualHRV = healthData['hrv'];
+          _actualHeartRate = healthData['heartRate'];
+          _actualSleepHours = healthData['sleepHours'];
         } else {
           _permissionsGranted = false;
         } 

@@ -12,34 +12,29 @@ class HealthService {
       HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
     ];
 
-    // Αρχικές τιμές
-    int steps = 0;
-    double hrv = 0.0;
-    double heartRate = 0.0;
-    double sleepHours = 0.0;
+    // nullable αρχικές τιμές 
+    int? steps;
+    double? hrv;
+    double? heartRate;
+    double? sleepHours;
 
     try {
       //Ανάκτηση δεδομένων υγείας από το Health Connect
       await health.configure(); 
       final status = await health.getHealthConnectSdkStatus();
-debugPrint("STATUS = $status");
+      debugPrint("STATUS = $status");
 
-final granted = await health.requestAuthorization(types);
-debugPrint("GRANTED = $granted");
+      final granted = await health.requestAuthorization(types);
+      debugPrint("GRANTED = $granted");
 
-final has = await health.hasPermissions(types);
-debugPrint("HAS = $has");
-/*
-      final status = await health.getHealthConnectSdkStatus(); // Έλεγχος αν το Health Connect είναι διαθέσιμο
-      debugPrint("Health Connect status: $status"); 
-      bool granted = await health.requestAuthorization(types); // Αίτηση για άδειες πρόσβασης στα δεδομένα υγείας
-      debugPrint("Permissions granted: $granted");
-*/     
+      final has = await health.hasPermissions(types);
+      debugPrint("HAS = $has");
+
       if (!granted) {
-        debugPrint("Ο χρήστης δεν έδωσε άδειες - διακοπή");
+        debugPrint("Ο χρήστης δεν έδωσε άδειες... διακοπή");
         return {
           'permissionsGranted': false,
-          'steps': 0, 'hrv': 0.0, 'heartRate': 0.0, 'sleepHours': 0.0,
+          'steps': null, 'hrv': null, 'heartRate': null, 'sleepHours': null,
         };
       }
 
@@ -47,7 +42,8 @@ debugPrint("HAS = $has");
       final startTime = endTime.subtract(const Duration(days: 1));
       
       // Ανάκτηση βημάτων
-      try{steps = await health.getTotalStepsInInterval(startTime, endTime) ?? 0;
+      try{
+        steps = await health.getTotalStepsInInterval(startTime, endTime);
       }
       catch(e){
         debugPrint("Σφάλμα ανάκτησης βημάτων: $e");
@@ -78,7 +74,7 @@ debugPrint("HAS = $has");
         heartRate = sum / hrData.length;
       }}
       catch(e){
-        debugPrint("Σφάλμα ανάκτησης HR ή HRV: $e");
+        debugPrint("Σφάλμα ανάκτησης HR: $e");
       }
 
       // Ανάκτηση δεδομένων ύπνου
