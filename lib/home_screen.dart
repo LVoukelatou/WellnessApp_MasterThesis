@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart'; // Για τα widgets και το UI
 import "health_service.dart"; // Για την ανάκτηση δεδομένων υγείας
 import 'api_services.dart'; // Για την επικοινωνία με το Flask API
-import 'stress_chart.dart'; // Για το γράφημα του επιπέδου στρες
 import 'stress_ring.dart'; // Για το κύκλο του επιπέδου στρες
+import 'pss10FollowUp_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key); // Constructor για το HomeScreen
@@ -58,8 +58,56 @@ class _HomeScreenState extends State<HomeScreen> {
     await Future.delayed(const Duration(milliseconds: 300));
     _fetchAndSyncStarting();}); // Καλούμε τη μέθοδο για να ανακτήσουμε τα δεδομένα υγείας και να ενημερώσουμε τις μεταβλητές της οθόνης
     _hasCompletedCurrentCheckIn();
+    _checkForPss10FollowUp();
   }
 
+  //Μέθοδος που ελέγχει εάν έχει περάσει ένας μήνας από την συμπλήρωση του PSS-10 για να το επαναεμφανίσει στον χρήστη
+  Future <void> _checkForPss10FollowUp() async{
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final data = doc.data();
+
+    final pssBaseline = data?['pss_baseline'] as Map<String, dynamic>?;
+    final pssFollowup = data?['pss_followup'];
+
+    // δεν υπάρχει baseline ή το follow up έγινε ήδη
+    if (pssBaseline == null || pssFollowup != null) {
+    return; 
+    }
+  
+    final Timestamp? completedAt = pssBaseline ['completed_at'] as Timestamp?;
+    if (completedAt == null) return;
+
+    final daysSinceBaseline = DateTime.now().difference(completedAt.toDate()).inDays;
+
+    if (daysSinceBaseline >= 30 && mounted) {
+    _showPss10FollowUpDialog();
+    }
+  }
+
+  void _showPss10FollowUpDialog() {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('Πέρασε περίπου ένας μήνας από τότε που ξεκίνησες να χρησιμοποιείς την εφαρμογή!'),
+      content: const Text('Θα ήθελες να δούμε μαζί πώς έχει αλλάξει η αίσθηση ελέγχου και πίεσης που νιώθεις στην καθημερινότητά σου τον τελευταίο μήνα;'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Αργότερα'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const Pss10FollowUpSsceen()));
+          },
+          child: const Text('Ξεκίνα'),
+        ),
+      ],
+    ),
+  );
+  }
 
   // Μέθοδος που ανακτά τα δεδομένα υγείας από το HealthService και ενημερώνει τις μεταβλητές της οθόνης
   Future<void> _fetchAndSyncStarting() async {

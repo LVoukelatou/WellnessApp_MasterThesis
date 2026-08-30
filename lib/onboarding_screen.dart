@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'navigationBar.dart';
+import 'pss10_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -59,11 +59,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           'heart_rate': _setCustomGoals ? _hrGoal.round() : 70,
           'hrv': _setCustomGoals ? _hrvGoal.round() : 50,
         },
-        'onboarding_completed': true,
       }, SetOptions(merge: true));
 
       if (mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const RootNavigation()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Pss10Screen()));
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));

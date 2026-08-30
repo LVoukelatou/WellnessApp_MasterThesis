@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -42,6 +43,59 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+// Σύνδεση με τον λογαριασμό Google
+  bool _googleSignInInitialized = false;
+
+Future<void> _ensureGoogleSignInInitialized() async {
+  if (!_googleSignInInitialized) {
+    await GoogleSignIn.instance.initialize();
+    _googleSignInInitialized = true;
+  }
+}
+
+Future<void> _signInWithGoogle() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    // πρέπει να αρχικοποιηθεί πρώτα μία φορά
+    await _ensureGoogleSignInInitialized();
+
+    // ανοίγει το παράθυρο επιλογής λογαριασμού Google
+    final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+
+    //παίρνουμε το idToken
+    final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+    // credential με idToken
+    final credential = GoogleAuthProvider.credential(
+      idToken: googleAuth.idToken,
+    );
+
+    // σύνδεση στο Firebase
+    await FirebaseAuth.instance.signInWithCredential(credential);
+
+  } on GoogleSignInException catch (e) {
+    // Ο χρήστης ακύρωσε ή άλλο σφάλμα Google Sign In
+    if (e.code != GoogleSignInExceptionCode.canceled) {
+      setState(() {
+        _errorMessage = 'Σφάλμα σύνδεσης Google.';
+      });
+    }
+  } on FirebaseAuthException catch (e) {
+    setState(() {
+      _errorMessage = 'Σφάλμα σύνδεσης Google: ${e.message}';
+    });
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Κάτι πήγε στραβά. Δοκίμασε ξανά.';
+    });
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
 
   @override
   void dispose() {
@@ -122,6 +176,32 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                             )
                           : const Text('Σύνδεση', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey.shade400)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('ή', style: TextStyle(color: Colors.grey.shade600)),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey.shade400)),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isLoading ? null : _signInWithGoogle,
+                      icon: Image.asset('assets/google_logo.png', height: 24),
+                      label: const Text('Σύνδεση με Google', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

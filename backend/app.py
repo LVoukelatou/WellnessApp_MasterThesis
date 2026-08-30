@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
 import os
-from groq import Groq
 
 from dotenv import load_dotenv
+from flask import Flask, jsonify, request
+from groq import Groq
+
 load_dotenv()  # Διαβάζει το .env αρχείο και ορίζει τα environment variables
 app = Flask(__name__)
 groq_client = Groq(api_key=os.environ.get("GROQ_API_KEY")) # Το key μπήκε ως environment variable

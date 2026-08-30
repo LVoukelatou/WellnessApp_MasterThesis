@@ -3,15 +3,16 @@ import 'home_screen.dart';
 import 'ai_coach_screen.dart';
 import 'relax_screen.dart'; 
 import 'history_screen.dart';
+import 'profile_screen.dart';
 
-class RootNavigation extends StatefulWidget {
-  const RootNavigation({Key? key}) : super(key: key);
+class Navigationbar extends StatefulWidget {
+  const Navigationbar({Key? key}) : super(key: key);
 
   @override
-  State<RootNavigation> createState() => _RootNavigationState();
+  State<Navigationbar> createState() => _NavigationbarState();
 }
 
-class _RootNavigationState extends State<RootNavigation> {
+class _NavigationbarState extends State<Navigationbar> {
   int _selectedIndex = 0; 
 
    // Κρατάει τις οθόνες φορτωμένες, ώστε να μη χάνεται το chat όταν αλλάζουμε tab
@@ -20,6 +21,7 @@ class _RootNavigationState extends State<RootNavigation> {
     HistoryScreen(),
     AiCoachScreen(), 
     RelaxScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -60,6 +62,11 @@ class _RootNavigationState extends State<RootNavigation> {
             icon: Icon(Icons.spa_outlined),
             activeIcon: Icon(Icons.spa),
             label: 'Χαλάρωση',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Προφίλ',
           ),
         ],
       ),

@@ -40,7 +40,7 @@ void main() async{
               final onboardingCompleted = userData?['onboarding_completed'] ?? false; // ελέγχουμε αν έχει ολοκληρωθεί το onboarding
               
               return onboardingCompleted 
-              ? const RootNavigation() // αν έχει ολοκληρωθεί το onboarding πηγαίνουμε στο RootNavigation
+              ? const Navigationbar() // αν έχει ολοκληρωθεί το onboarding πηγαίνουμε στο Navigationbar
               : const OnboardingScreen(); // αλλιώς στο OnboardingScreen
             },
           );
