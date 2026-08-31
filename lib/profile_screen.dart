@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:google_sign_in/google_sign_in.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -15,6 +15,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _isSigningOut = false; 
+  bool _isDeleting = false;
+  bool _googleSignInInitialized = false;
 
   double _stepsGoal = 10000;
   double _sleepGoal = 8;
@@ -23,6 +26,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String get _userEmail => FirebaseAuth.instance.currentUser?.email ?? 'Άγνωστο email';
 
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (!_googleSignInInitialized) {
+      await GoogleSignIn.instance.initialize();
+      _googleSignInInitialized = true;
+    }
+  }
 
   @override
   void initState() {
@@ -51,11 +60,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
   Future <void> _saveUserDataGoals() async {
-    setState(() => _isSaving = true);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Φαίνεται να έχεις αποσυνδεθεί, δοκίμασε ξανά μετά τη σύνδεση.')),
+        );
+      }
+      return;
+    }
+
+  setState(() => _isSaving = true);
+  final uid = currentUser.uid;
 
     try {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'goals': {
           'steps': _stepsGoal.round(),
@@ -98,7 +116,147 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _signOut() async {
-  await FirebaseAuth.instance.signOut();
+    setState(() => _isSigningOut = true);
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> _confirmAndDeleteAccount() async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: const Text('Διαγραφή λογαριασμού'),
+      content: const Text(
+        'Αυτή η ενέργεια είναι μόνιμη. Θα διαγραφεί ο λογαριασμός σου και όλα τα δεδομένα σου (ιστορικό check-ins, στόχοι, αξιολογήσεις PSS-10). Δεν μπορεί να αναιρεθεί. Είσαι σίγουρος/η;',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Άκυρο'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Διαγραφή', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmed == true) {
+    _deleteAccount();
+  }
+  }
+
+  Future<void> _deleteAccount() async {
+    setState(() => _isDeleting = true);
+
+    try {
+      await _doDelete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        // Το Firebase θέλει νέα επαλήθευση πριν επιτρέψει διαγραφή
+        final reauthenticated = await _reauthenticate();
+        if (reauthenticated) {
+          try {
+            await _doDelete();
+          } catch (e2) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e2')));
+            }
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: ${e.message}')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isDeleting = false);
+    }
+  }
+
+  // Διαγράφει πρώτα τα δεδομένα Firestore και μετά τον ίδιο τον λογαριασμό
+  Future<void> _doDelete() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final uid = user.uid;
+
+    // Διαγραφή του collection με ενα εν τα check_ins
+    final checkIns = await FirebaseFirestore.instance
+        .collection('users').doc(uid).collection('check_ins').get();
+    for (final doc in checkIns.docs) {
+      await doc.reference.delete();
+    }
+
+    // Διαγραφή του κυρίως document
+    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+    // Διαγραφή του ίδιου του λογαριασμού
+    await user.delete();
+  }
+
+  // Ζητάει από τον χρήστη να ξαναεπιβεβαιώσει την ταυτότητά του
+  Future<bool> _reauthenticate() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+
+    final isGoogleUser = user.providerData.any((p) => p.providerId == 'google.com');
+
+    if (isGoogleUser) {
+      // re-authentication μέσω Google
+      try {
+        await _ensureGoogleSignInInitialized();
+        final googleUser = await GoogleSignIn.instance.authenticate();
+        final googleAuth = googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+        await user.reauthenticateWithCredential(credential);
+        return true;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Η επιβεβαίωση απέτυχε.')));
+        }
+        return false;
+      }
+    } else {
+      // re-authentication μέσω email/password ζητάμε τον κωδικό ξανά
+      final password = await _askForPassword();
+      if (password == null || password.isEmpty) return false;
+
+      try {
+        final credential = EmailAuthProvider.credential(email: user.email!, password: password);
+        await user.reauthenticateWithCredential(credential);
+        return true;
+      } on FirebaseAuthException {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Λάθος κωδικός.')));
+        }
+        return false;
+      }
+    }
+  }
+
+  Future<String?> _askForPassword() async {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Επιβεβαίωση κωδικού'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(labelText: 'Κωδικός'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, null), child: const Text('Άκυρο')),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Συνέχεια')),
+        ],
+      ),
+    );
   }
 
   @override
@@ -107,7 +265,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color.fromARGB(255, 223, 215, 215),
       appBar: AppBar(
         title: const Text('Το προφίλ μου'),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromARGB(255, 25, 96, 25),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: _isLoading
@@ -145,7 +304,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     onTap: _signOut,
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: const [
+                                      children: [
+                                        if (_isSigningOut)
+                                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red))
+                                        else
                                         Icon(Icons.logout, color: Colors.red, size: 16),
                                         SizedBox(width: 4),
                                         Text('Αποσύνδεση', style: TextStyle(color: Colors.red, fontSize: 13)),
@@ -235,6 +397,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 12),
+                    Center(
+                      child: TextButton(
+                        onPressed: _isDeleting ? null : _confirmAndDeleteAccount,
+                        child: _isDeleting
+                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                            : Text('Διαγραφή λογαριασμού', style: TextStyle(color: Colors.red.shade300, fontSize: 12)),
+                      ),
+                    ),
                     ],
                 ),
               ),

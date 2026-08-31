@@ -43,6 +43,37 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+Future <void> _resetPassword () async {
+  if (_email.text.trim().isEmpty) {
+    setState(() {
+      _errorMessage = 'Γράψε πρώτα το email σου παραπάνω, για να σου στείλουμε σύνδεσμο επαναφοράς.';
+    });
+    return;
+  }
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+  try {
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: _email.text.trim());
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Σου στείλαμε email με οδηγίες επαναφοράς κωδικού 📩')));
+    }
+  } on FirebaseAuthException catch (e) {
+    setState(() {
+      if (e.code == 'user-not-found') {
+        _errorMessage = 'Δεν βρέθηκε λογαριασμός με αυτό το email.';
+      } else if (e.code == 'invalid-email') {
+        _errorMessage = 'Το email δεν φαίνεται έγκυρο.';
+      } else {
+        _errorMessage = 'Σφάλμα: ${e.message}';
+      }
+    });
+  } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
 // Σύνδεση με τον λογαριασμό Google
   bool _googleSignInInitialized = false;
 
@@ -149,6 +180,14 @@ Future<void> _signInWithGoogle() async {
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       filled: true,
                       fillColor: Colors.white,
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _resetPassword,
+                      style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                      child: Text('Ξέχασες τον κωδικό;', style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
                     ),
                   ),
                   if (_errorMessage != null) ...[
