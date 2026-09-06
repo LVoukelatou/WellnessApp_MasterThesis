@@ -4,7 +4,7 @@ import 'ai_coach_service.dart';
 class ChatMessage {
   final String text;
   final bool isUser;
-  ChatMessage({required this.text, required this.isUser}); 
+  ChatMessage({required this.text, required this.isUser});
 }
 
 class AiCoachScreen extends StatefulWidget {
@@ -46,19 +46,21 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       });
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          text: 'Συγγνώμη, υπήρξε πρόβλημα σύνδεσης. Δοκίμασε ξανά.',
-          isUser: false,
-        ));
+        _messages.add(
+          ChatMessage(
+            text: 'Συγγνώμη, υπήρξε πρόβλημα σύνδεσης. Δοκίμασε ξανά.',
+            isUser: false,
+          ),
+        );
       });
     } finally {
       setState(() => _isLoading = false);
       _scrollToBottom();
     }
-  } 
-  // φτιάχνουμε το ιστορικό με τα τελευταία 10 μηνύματα για το context πλην του πιο πρόσφατου (αυτό στέλνεται ξεχωριστά ως τρέχον μήνυμα)
-      List<Map<String, String>> _buildRecentHistory() {
+  }
 
+  // φτιάχνουμε το ιστορικό με τα τελευταία 10 μηνύματα για το context πλην του πιο πρόσφατου (αυτό στέλνεται ξεχωριστά ως τρέχον μήνυμα)
+  List<Map<String, String>> _buildRecentHistory() {
     // αφαιρούμε το τελευταίο μήνυμα από τη λίστα
     List<ChatMessage> messagesWithoutLast = [];
     for (int i = 0; i < _messages.length - 1; i++) {
@@ -67,7 +69,9 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
 
     // κρατάμε τα τελευταία 10
     List<ChatMessage> lastTenMessages = [];
-    int startIndex = messagesWithoutLast.length > 10 ? messagesWithoutLast.length - 10 : 0;
+    int startIndex = messagesWithoutLast.length > 10
+        ? messagesWithoutLast.length - 10
+        : 0;
     for (int i = startIndex; i < messagesWithoutLast.length; i++) {
       lastTenMessages.add(messagesWithoutLast[i]);
     }
@@ -82,7 +86,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
     }
 
     return history;
-  }  
+  }
+
   // Scroll στο τέλος του chat όταν έρχεται νέο μήνυμα
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -95,7 +100,7 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _textController.dispose();
@@ -119,7 +124,10 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                 ? Center(
                     child: Text(
                       'Γεια! Πώς νιώθεις σήμερα;',
-                      style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -129,11 +137,18 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                     itemBuilder: (context, index) {
                       final message = _messages[index];
                       return Align(
-                        alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+                        alignment: message.isUser
+                            ? Alignment.centerRight
+                            : Alignment.centerLeft,
                         child: Container(
                           margin: const EdgeInsets.symmetric(vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                          ),
                           decoration: BoxDecoration(
                             color: message.isUser
                                 ? const Color.fromARGB(255, 25, 96, 25)
@@ -142,7 +157,11 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                           ),
                           child: Text(
                             message.text,
-                            style: TextStyle(color: message.isUser ? Colors.white : Colors.black87),
+                            style: TextStyle(
+                              color: message.isUser
+                                  ? Colors.white
+                                  : Colors.black87,
+                            ),
                           ),
                         ),
                       );
@@ -153,7 +172,8 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
             const Padding(
               padding: EdgeInsets.all(8.0),
               child: SizedBox(
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
@@ -194,7 +214,10 @@ class _AiCoachScreenState extends State<AiCoachScreen> {
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 12,
+                      ),
                     ),
                     onSubmitted: _sendMessage,
                   ),

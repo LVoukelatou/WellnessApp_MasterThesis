@@ -4,7 +4,8 @@ class GroundingTechniqueScreen extends StatefulWidget {
   const GroundingTechniqueScreen({Key? key}) : super(key: key);
 
   @override
-  State<GroundingTechniqueScreen> createState() => _GroundingTechniqueScreenState();
+  State<GroundingTechniqueScreen> createState() =>
+      _GroundingTechniqueScreenState();
 }
 
 class _GroundingStep {
@@ -12,18 +13,42 @@ class _GroundingStep {
   final String instruction;
   final IconData icon;
 
-  const _GroundingStep({required this.number, required this.instruction, required this.icon});
+  const _GroundingStep({
+    required this.number,
+    required this.instruction,
+    required this.icon,
+  });
 }
 
 class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
   int _currentStep = 0;
 
   final List<_GroundingStep> _steps = const [
-    _GroundingStep(number: '5', instruction: 'πράγματα που μπορείς να δεις', icon: Icons.visibility),
-    _GroundingStep(number: '4', instruction: 'πράγματα που μπορείς να αγγίξεις', icon: Icons.back_hand),
-    _GroundingStep(number: '3', instruction: 'πράγματα που μπορείς να ακούσεις', icon: Icons.hearing),
-    _GroundingStep(number: '2', instruction: 'πράγματα που μπορείς να μυρίσεις', icon: Icons.air),
-    _GroundingStep(number: '1', instruction: 'πράγμα που μπορείς να γευτείς', icon: Icons.restaurant),
+    _GroundingStep(
+      number: '5',
+      instruction: 'πράγματα που μπορείς να δεις',
+      icon: Icons.visibility,
+    ),
+    _GroundingStep(
+      number: '4',
+      instruction: 'πράγματα που μπορείς να αγγίξεις',
+      icon: Icons.back_hand,
+    ),
+    _GroundingStep(
+      number: '3',
+      instruction: 'πράγματα που μπορείς να ακούσεις',
+      icon: Icons.hearing,
+    ),
+    _GroundingStep(
+      number: '2',
+      instruction: 'πράγματα που μπορείς να μυρίσεις',
+      icon: Icons.air,
+    ),
+    _GroundingStep(
+      number: '1',
+      instruction: 'πράγμα που μπορείς να γευτείς',
+      icon: Icons.restaurant,
+    ),
   ];
 
   void _nextStep() {
@@ -36,7 +61,8 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final step = _steps[_currentStep]; //δες σε ποιο βήμα είναι για να εμφανιστούν τα σωστά στοιχεία
+    final step =
+        _steps[_currentStep]; //δες σε ποιο βήμα είναι για να εμφανιστούν τα σωστά στοιχεία
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 223, 215, 215),
@@ -64,7 +90,11 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
                       CircleAvatar(
                         radius: 60,
                         backgroundColor: const Color.fromARGB(255, 25, 96, 25),
-                        child: Icon(step.icon, size: 50, color: const Color.fromARGB(255, 25, 96, 25)),
+                        child: Icon(
+                          step.icon,
+                          size: 50,
+                          color: const Color.fromARGB(255, 25, 96, 25),
+                        ),
                       ),
                       const SizedBox(height: 24),
                       Text(
@@ -96,11 +126,18 @@ class _GroundingTechniqueScreenState extends State<GroundingTechniqueScreen> {
                     backgroundColor: const Color.fromARGB(255, 25, 96, 25),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
-                    _currentStep < _steps.length - 1 ? 'Επόμενο' : 'Ξανά από την αρχή',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    _currentStep < _steps.length - 1
+                        ? 'Επόμενο'
+                        : 'Ξανά από την αρχή',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

@@ -32,11 +32,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      if (mounted) Navigator.pop(context); 
+      if (mounted) Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       setState(() {
         if (e.code == 'weak-password') {
-          _errorMessage = 'Ο κωδικός είναι πολύ αδύναμος (τουλάχιστον 6 χαρακτήρες).';
+          _errorMessage =
+              'Ο κωδικός είναι πολύ αδύναμος (τουλάχιστον 6 χαρακτήρες).';
         } else if (e.code == 'email-already-in-use') {
           _errorMessage = 'Υπάρχει ήδη λογαριασμός με αυτό το email.';
         } else if (e.code == 'invalid-email') {
@@ -49,6 +50,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
   // Dispose των controllers όταν το widget καταστρέφεται
   @override
   void dispose() {
@@ -57,7 +59,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,7 +86,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
@@ -95,7 +99,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Κωδικός',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
@@ -106,14 +112,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Επιβεβαίωση κωδικού',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                   ),
                 ),
                 if (_errorMessage != null) ...[
                   const SizedBox(height: 12),
-                  Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
                 ],
                 const SizedBox(height: 24),
                 SizedBox(
@@ -124,14 +135,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       backgroundColor: const Color.fromARGB(255, 25, 96, 25),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: _isLoading
                         ? const SizedBox(
-                            width: 20, height: 20,
-                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : const Text('Εγγραφή', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        : const Text(
+                            'Εγγραφή',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ),
               ],

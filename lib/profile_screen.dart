@@ -9,13 +9,14 @@ class ProfileScreen extends StatefulWidget {
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
+
 class _ProfileScreenState extends State<ProfileScreen> {
   int? _pss10BaselineScore;
   int? _pss10FollowupScore;
 
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _isSigningOut = false; 
+  bool _isSigningOut = false;
   bool _isDeleting = false;
   bool _googleSignInInitialized = false;
 
@@ -24,7 +25,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   double _hrGoal = 70;
   double _hrvGoal = 50;
 
-  String get _userEmail => FirebaseAuth.instance.currentUser?.email ?? 'Άγνωστο email';
+  String get _userEmail =>
+      FirebaseAuth.instance.currentUser?.email ?? 'Άγνωστο email';
 
   Future<void> _ensureGoogleSignInInitialized() async {
     if (!_googleSignInInitialized) {
@@ -41,7 +43,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadUserDataGoals() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final data = doc.data();
     final goals = (doc.data()?['goals'] as Map<String, dynamic>?) ?? {};
 
@@ -54,24 +59,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _hrGoal = (goals['heart_rate'] as num?)?.toDouble() ?? 70;
       _hrvGoal = (goals['hrv'] as num?)?.toDouble() ?? 50;
       _pss10BaselineScore = (pss10Baseline?['score'] as num?)?.toInt();
-      _pss10FollowupScore = (pss10Followup?['score'] as num?)?.toInt(); 
+      _pss10FollowupScore = (pss10Followup?['score'] as num?)?.toInt();
       _isLoading = false;
     });
-    }
+  }
 
-  Future <void> _saveUserDataGoals() async {
+  Future<void> _saveUserDataGoals() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Φαίνεται να έχεις αποσυνδεθεί, δοκίμασε ξανά μετά τη σύνδεση.')),
+          const SnackBar(
+            content: Text(
+              'Φαίνεται να έχεις αποσυνδεθεί, δοκίμασε ξανά μετά τη σύνδεση.',
+            ),
+          ),
         );
       }
       return;
     }
 
-  setState(() => _isSaving = true);
-  final uid = currentUser.uid;
+    setState(() => _isSaving = true);
+    final uid = currentUser.uid;
 
     try {
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
@@ -90,20 +99,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Σφάλμα: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
-  Widget _goalSlider(String label, double value, double min, double max, String unit, ValueChanged<double> onChanged) {
+  Widget _goalSlider(
+    String label,
+    double value,
+    double min,
+    double max,
+    String unit,
+    ValueChanged<double> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label: ${value.round()} $unit', style: const TextStyle(fontWeight: FontWeight.w600)),
+        Text(
+          '$label: ${value.round()} $unit',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         Slider(
           value: value,
           min: min,
@@ -121,30 +140,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _confirmAndDeleteAccount() async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Διαγραφή λογαριασμού'),
-      content: const Text(
-        'Αυτή η ενέργεια είναι μόνιμη. Θα διαγραφεί ο λογαριασμός σου και όλα τα δεδομένα σου (ιστορικό check-ins, στόχοι, αξιολογήσεις PSS-10). Δεν μπορεί να αναιρεθεί. Είσαι σίγουρος/η;',
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Διαγραφή λογαριασμού'),
+        content: const Text(
+          'Αυτή η ενέργεια είναι μόνιμη. Θα διαγραφεί ο λογαριασμός σου και όλα τα δεδομένα σου (ιστορικό check-ins, στόχοι, αξιολογήσεις PSS-10). Δεν μπορεί να αναιρεθεί. Είσαι σίγουρος/η;',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Άκυρο'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Διαγραφή',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Άκυρο'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: const Text('Διαγραφή', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        ),
-      ],
-    ),
-  );
+    );
 
-  if (confirmed == true) {
-    _deleteAccount();
-  }
+    if (confirmed == true) {
+      _deleteAccount();
+    }
   }
 
   Future<void> _deleteAccount() async {
@@ -161,18 +183,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             await _doDelete();
           } catch (e2) {
             if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e2')));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Σφάλμα: $e2')));
             }
           }
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: ${e.message}')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Σφάλμα: ${e.message}')));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
       }
     } finally {
       if (mounted) setState(() => _isDeleting = false);
@@ -187,7 +215,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Διαγραφή του collection με ενα εν τα check_ins
     final checkIns = await FirebaseFirestore.instance
-        .collection('users').doc(uid).collection('check_ins').get();
+        .collection('users')
+        .doc(uid)
+        .collection('check_ins')
+        .get();
     for (final doc in checkIns.docs) {
       await doc.reference.delete();
     }
@@ -204,7 +235,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return false;
 
-    final isGoogleUser = user.providerData.any((p) => p.providerId == 'google.com');
+    final isGoogleUser = user.providerData.any(
+      (p) => p.providerId == 'google.com',
+    );
 
     if (isGoogleUser) {
       // re-authentication μέσω Google
@@ -212,12 +245,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         await _ensureGoogleSignInInitialized();
         final googleUser = await GoogleSignIn.instance.authenticate();
         final googleAuth = googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
         await user.reauthenticateWithCredential(credential);
         return true;
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Η επιβεβαίωση απέτυχε.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Η επιβεβαίωση απέτυχε.')),
+          );
         }
         return false;
       }
@@ -227,12 +264,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (password == null || password.isEmpty) return false;
 
       try {
-        final credential = EmailAuthProvider.credential(email: user.email!, password: password);
+        final credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: password,
+        );
         await user.reauthenticateWithCredential(credential);
         return true;
       } on FirebaseAuthException {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Λάθος κωδικός.')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Λάθος κωδικός.')));
         }
         return false;
       }
@@ -252,8 +294,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: const InputDecoration(labelText: 'Κωδικός'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, null), child: const Text('Άκυρο')),
-          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: const Text('Συνέχεια')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: const Text('Άκυρο'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Συνέχεια'),
+          ),
         ],
       ),
     );
@@ -283,7 +331,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16.0),
-                        side: const BorderSide(color: Color.fromARGB(255, 25, 96, 25), width: 1.5),
+                        side: const BorderSide(
+                          color: Color.fromARGB(255, 25, 96, 25),
+                          width: 1.5,
+                        ),
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -298,22 +349,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Συνδεδεμένος/η ως', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                  Text(_userEmail, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                                  Text(
+                                    'Συνδεδεμένος/η ως',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                  Text(
+                                    _userEmail,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                   GestureDetector(
                                     onTap: _signOut,
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         if (_isSigningOut)
-                                          const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.red))
+                                          const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.red,
+                                            ),
+                                          )
                                         else
-                                        Icon(Icons.logout, color: Colors.red, size: 16),
+                                          Icon(
+                                            Icons.logout,
+                                            color: Colors.red,
+                                            size: 16,
+                                          ),
                                         SizedBox(width: 4),
-                                        Text('Αποσύνδεση', style: TextStyle(color: Colors.red, fontSize: 13)),
+                                        Text(
+                                          'Αποσύνδεση',
+                                          style: TextStyle(
+                                            color: Colors.red,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ],
                                     ),
-                                  )
+                                  ),
                                 ],
                               ),
                             ),
@@ -328,31 +408,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16.0),
-                          side: const BorderSide(color: Color.fromARGB(255, 25, 96, 25), width: 1.5),
+                          side: const BorderSide(
+                            color: Color.fromARGB(255, 25, 96, 25),
+                            width: 1.5,
+                          ),
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text('Αξιολόγηση Στρες (PSS-10)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                              const Text(
+                                'Αξιολόγηση Στρες (PSS-10)',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text('Αρχική μέτρηση', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                      Text('$_pss10BaselineScore/40', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                      Text(
+                                        'Αρχική μέτρηση',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$_pss10BaselineScore/40',
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   if (_pss10FollowupScore != null)
                                     Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
-                                        Text('Μετά από 1 μήνα', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                                        Text('$_pss10FollowupScore/40', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                                        Text(
+                                          'Μετά από 1 μήνα',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                        Text(
+                                          '$_pss10FollowupScore/40',
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                 ],
@@ -363,18 +479,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                     const SizedBox(height: 24),
-                    const Text('Στόχοι Βιοσημάτων', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Στόχοι Βιοσημάτων',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       'Προσάρμοσε τους στόχους σου όποτε θέλεις.',
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                     const SizedBox(height: 16),
 
-                    _goalSlider('Βήματα', _stepsGoal, 2000, 20000, 'βήματα', (v) => setState(() => _stepsGoal = v)),
-                    _goalSlider('Ύπνος', _sleepGoal, 4, 10, 'ώρες', (v) => setState(() => _sleepGoal = v)),
-                    _goalSlider('Καρδιακός ρυθμός', _hrGoal, 50, 100, 'bpm', (v) => setState(() => _hrGoal = v)),
-                    _goalSlider('HRV', _hrvGoal, 20, 100, 'ms', (v) => setState(() => _hrvGoal = v)),
+                    _goalSlider(
+                      'Βήματα',
+                      _stepsGoal,
+                      2000,
+                      20000,
+                      'βήματα',
+                      (v) => setState(() => _stepsGoal = v),
+                    ),
+                    _goalSlider(
+                      'Ύπνος',
+                      _sleepGoal,
+                      4,
+                      10,
+                      'ώρες',
+                      (v) => setState(() => _sleepGoal = v),
+                    ),
+                    _goalSlider(
+                      'Καρδιακός ρυθμός',
+                      _hrGoal,
+                      50,
+                      100,
+                      'bpm',
+                      (v) => setState(() => _hrGoal = v),
+                    ),
+                    _goalSlider(
+                      'HRV',
+                      _hrvGoal,
+                      20,
+                      100,
+                      'ms',
+                      (v) => setState(() => _hrvGoal = v),
+                    ),
 
                     const SizedBox(height: 24),
                     SizedBox(
@@ -382,14 +535,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveUserDataGoals,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 25, 96, 25),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            25,
+                            96,
+                            25,
+                          ),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         child: _isSaving
                             ? const SizedBox(
-                                width: 20, height: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text('Αποθήκευση'),
                       ),
@@ -399,13 +561,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 12),
                     Center(
                       child: TextButton(
-                        onPressed: _isDeleting ? null : _confirmAndDeleteAccount,
+                        onPressed: _isDeleting
+                            ? null
+                            : _confirmAndDeleteAccount,
                         child: _isDeleting
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Text('Διαγραφή λογαριασμού', style: TextStyle(color: Colors.red.shade300, fontSize: 12)),
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                'Διαγραφή λογαριασμού',
+                                style: TextStyle(
+                                  color: Colors.red.shade300,
+                                  fontSize: 12,
+                                ),
+                              ),
                       ),
                     ),
-                    ],
+                  ],
                 ),
               ),
             ),

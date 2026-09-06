@@ -6,7 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'pss10_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -15,26 +15,28 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _isLoading = false;
   bool _setCustomGoals = false;
-  bool _stepsManuallyChanged = false; // flag για να ξέρουμε αν ο χρήστης έχει αλλάξει χειροκίνητα το slider των βημάτων
+  bool _stepsManuallyChanged =
+      false; // flag για να ξέρουμε αν ο χρήστης έχει αλλάξει χειροκίνητα το slider των βημάτων
 
   String _activityLevel = 'Καθιστική εργασία';
 
-  double _stepsGoal = 7000; // αρχικό, ίδιο με το default της "Καθιστικής εργασίας"
+  double _stepsGoal =
+      7000; // αρχικό, ίδιο με το default της "Καθιστικής εργασίας"
   double _sleepGoal = 8;
   double _hrGoal = 70;
   double _hrvGoal = 50;
 
   // Επιστρέφει το προτεινόμενο στόχο βημάτων ανάλογα με το activity level
   double _suggestedSteps(String level) {
-  switch (level) {
-    case 'Καθιστική εργασία':
-      return 7000;
-    case 'Ενεργή/σωματική εργασία':
-      return 10000;
-    default:
-      return 9000; // ενδιάμεσο, μεταξύ 7000-10000 εύρους
+    switch (level) {
+      case 'Καθιστική εργασία':
+        return 7000;
+      case 'Ενεργή/σωματική εργασία':
+        return 10000;
+      default:
+        return 9000; // ενδιάμεσο, μεταξύ 7000-10000 εύρους
+    }
   }
-}
 
   void _onActivityChanged(String val) {
     setState(() {
@@ -62,22 +64,43 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       }, SetOptions(merge: true));
 
       if (mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Pss10Screen()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Pss10Screen()),
+        );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Σφάλμα: $e')));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Widget _slider(String label, double value, double min, double max, String unit, ValueChanged<double> onChanged) {
+  Widget _slider(
+    String label,
+    double value,
+    double min,
+    double max,
+    String unit,
+    ValueChanged<double> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('$label: ${value.round()} $unit', style: const TextStyle(fontWeight: FontWeight.w600)),
-        Slider(value: value, min: min, max: max, onChanged: onChanged,
-            activeColor: const Color.fromARGB(255, 25, 96, 25)),
+        Text(
+          '$label: ${value.round()} $unit',
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        Slider(
+          value: value,
+          min: min,
+          max: max,
+          onChanged: onChanged,
+          activeColor: const Color.fromARGB(255, 25, 96, 25),
+        ),
       ],
     );
   }
@@ -86,34 +109,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 223, 215, 215),
-      appBar: AppBar(title: const Text('Ας φτιάξουμε το προφίλ σου'), backgroundColor: Colors.transparent, elevation: 0),
+      appBar: AppBar(
+        title: const Text('Ας φτιάξουμε το προφίλ σου'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Η κίνηση εκτός δουλειάς βοηθά στη διαχείριση του άγχους. Πες μας λίγα λόγια για να προσαρμόσουμε τους στόχους σου.',
-                  style: TextStyle(fontWeight: FontWeight.w400)),
+              const Text(
+                'Η κίνηση εκτός δουλειάς βοηθά στη διαχείριση του άγχους. Πες μας λίγα λόγια για να προσαρμόσουμε τους στόχους σου.',
+                style: TextStyle(fontWeight: FontWeight.w400),
+              ),
               const SizedBox(height: 12),
-              const Text('Πώς θα περιέγραφες τη σωματική σου δραστηριότητα;',
-                  style: TextStyle(fontWeight: FontWeight.w600)),
+              const Text(
+                'Πώς θα περιέγραφες τη σωματική σου δραστηριότητα;',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
               RadioListTile<String>(
-                title: const Text('Κυρίως χαλάρωση/καθιστική ζωή στον ελεύθερο χρόνο μου'),
+                title: const Text(
+                  'Κυρίως χαλάρωση/καθιστική ζωή στον ελεύθερο χρόνο μου',
+                ),
                 value: 'Καθιστική εργασία',
                 groupValue: _activityLevel,
                 activeColor: const Color.fromARGB(255, 25, 96, 25),
                 onChanged: (val) => _onActivityChanged(val!),
               ),
               RadioListTile<String>(
-                title: const Text('Μέτρια δραστηριότητα (περπάτημα, ελαφριά άσκηση)'),
+                title: const Text(
+                  'Μέτρια δραστηριότητα (περπάτημα, ελαφριά άσκηση)',
+                ),
                 value: 'Μέτρια δραστηριότητα',
                 groupValue: _activityLevel,
                 activeColor: const Color.fromARGB(255, 25, 96, 25),
                 onChanged: (val) => _onActivityChanged(val!),
               ),
               RadioListTile<String>(
-                title: const Text('Ενεργός τρόπος ζωής (τακτική άσκηση/γυμναστήριο)'),
+                title: const Text(
+                  'Ενεργός τρόπος ζωής (τακτική άσκηση/γυμναστήριο)',
+                ),
                 value: 'Ενεργή/σωματική εργασία',
                 groupValue: _activityLevel,
                 activeColor: const Color.fromARGB(255, 25, 96, 25),
@@ -127,7 +164,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               // Πρόταση στον χρήστη για τον στόχο βημάτων ανάλογα με το activity level
               Text(
                 'Προτεινόμενος στόχος βημάτων για την μείωση του εργασιακού άγχους: ${_stepsGoal.round()}',
-                style: const TextStyle(fontWeight: FontWeight.w600, color: Color.fromARGB(255, 25, 96, 25)),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Color.fromARGB(255, 25, 96, 25),
+                ),
               ),
               const SizedBox(height: 12),
 
@@ -139,15 +179,68 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
 
               if (_setCustomGoals) ...[
-                _slider('Βήματα', _stepsGoal, 2000, 20000, 'βήματα', (v) {
-                  setState(() {
-                    _stepsGoal = v;
-                    _stepsManuallyChanged = true; // έχει αλλάξει χειροκίνητα το slider των βημάτων
-                  });
-                }),
-                _slider('Ύπνος', _sleepGoal, 4, 10, 'ώρες', (v) => setState(() => _sleepGoal = v)),
-                _slider('Καρδιακός ρυθμός', _hrGoal, 50, 100, 'bpm', (v) => setState(() => _hrGoal = v)),
-                _slider('HRV', _hrvGoal, 20, 100, 'ms', (v) => setState(() => _hrvGoal = v)),
+                //Βήματα
+                Text(
+                  'Βήματα: ${_stepsGoal.round()} βήματα',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Slider(
+                  value: _stepsGoal,
+                  min: 2000,
+                  max: 20000,
+                  activeColor: const Color.fromARGB(255, 25, 96, 25),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _stepsGoal = newValue;
+                      _stepsManuallyChanged = true;
+                    });
+                  },
+                ),
+                Text(
+                  'Ύπνος: ${_sleepGoal.round()} ώρες',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Slider(
+                  value: _sleepGoal,
+                  min: 4,
+                  max: 10,
+                  activeColor: const Color.fromARGB(255, 25, 96, 25),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _sleepGoal = newValue;
+                    });
+                  },
+                ),
+                Text(
+                  'Καρδιακός ρυθμός: ${_hrGoal.round()} bpm',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Slider(
+                  value: _hrGoal,
+                  min: 50,
+                  max: 100,
+                  activeColor: const Color.fromARGB(255, 25, 96, 25),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _hrGoal = newValue;
+                    });
+                  },
+                ),
+                Text(
+                  'HRV: ${_hrvGoal.round()} ms',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Slider(
+                  value: _hrvGoal,
+                  min: 20,
+                  max: 100,
+                  activeColor: const Color.fromARGB(255, 25, 96, 25),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _hrvGoal = newValue;
+                    });
+                  },
+                ),
               ],
 
               const SizedBox(height: 24),
@@ -161,7 +254,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : const Text('Ολοκλήρωση'),
                 ),
               ),

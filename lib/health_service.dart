@@ -12,7 +12,7 @@ class HealthService {
       HealthDataType.HEART_RATE_VARIABILITY_RMSSD,
     ];
 
-    // nullable αρχικές τιμές 
+    // nullable αρχικές τιμές
     int? steps;
     double? hrv;
     double? heartRate;
@@ -20,73 +20,90 @@ class HealthService {
 
     try {
       //Ανάκτηση δεδομένων υγείας από το Health Connect
-      await health.configure(); 
-      final status = await health.getHealthConnectSdkStatus();
+      await health
+          .configure(); // ετοιμάσου να διαβάσεις δεδομένα από το Health Connect
+      final status = await health
+          .getHealthConnectSdkStatus(); // είναι εγκατεστημένο το Health Connect στο κινητό; και αν ναι, είναι ενεργοποιημένο;
       debugPrint("STATUS = $status");
 
-      final granted = await health.requestAuthorization(types);
+      final granted = await health.requestAuthorization(
+        types,
+      ); //εμφανίζεται το popup στον χρήστη
       debugPrint("GRANTED = $granted");
-
-      final has = await health.hasPermissions(types);
-      debugPrint("HAS = $has");
 
       if (!granted) {
         debugPrint("Ο χρήστης δεν έδωσε άδειες... διακοπή");
         return {
           'permissionsGranted': false,
-          'steps': null, 'hrv': null, 'heartRate': null, 'sleepHours': null,
+          'steps': null,
+          'hrv': null,
+          'heartRate': null,
+          'sleepHours': null,
         };
       }
 
       final endTime = DateTime.now();
       final startTime = endTime.subtract(const Duration(days: 1));
-      
+
       // Ανάκτηση βημάτων
-      try{
+      try {
         steps = await health.getTotalStepsInInterval(startTime, endTime);
-      }
-      catch(e){
+      } catch (e) {
         debugPrint("Σφάλμα ανάκτησης βημάτων: $e");
       }
 
       // Ανάκτηση HRV
-      try{
-      final hrvData = await health.getHealthDataFromTypes(startTime: startTime, endTime: endTime, types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD]);
-      if (hrvData.isNotEmpty) {
-        double sum = 0.0;
-        for (var data in hrvData) {
-          sum += (data.value as NumericHealthValue).numericValue.toDouble();
+      try {
+        final hrvData = await health.getHealthDataFromTypes(
+          startTime: startTime,
+          endTime: endTime,
+          types: [HealthDataType.HEART_RATE_VARIABILITY_RMSSD],
+        );
+        if (hrvData.isNotEmpty) {
+          double sum = 0.0;
+          for (var data in hrvData) {
+            sum += (data.value as NumericHealthValue).numericValue.toDouble();
+          }
+          hrv = sum / hrvData.length;
         }
-        hrv = sum / hrvData.length;
-      }}
-      catch(e){
+      } catch (e) {
         debugPrint("Σφάλμα ανάκτησης HRV: $e");
       }
 
       // Ανάκτηση HR
-      try{
-      final hrData = await health.getHealthDataFromTypes(startTime: startTime, endTime: endTime, types: [HealthDataType.HEART_RATE]);
-      if (hrData.isNotEmpty) {
-        double sum = 0.0;
-        for (var data in hrData) {
-          sum += (data.value as NumericHealthValue).numericValue.toDouble();
+      try {
+        final hrData = await health.getHealthDataFromTypes(
+          startTime: startTime,
+          endTime: endTime,
+          types: [HealthDataType.HEART_RATE],
+        );
+        if (hrData.isNotEmpty) {
+          double sum = 0.0;
+          for (var data in hrData) {
+            sum += (data.value as NumericHealthValue).numericValue.toDouble();
+          }
+          heartRate = sum / hrData.length;
         }
-        heartRate = sum / hrData.length;
-      }}
-      catch(e){
+      } catch (e) {
         debugPrint("Σφάλμα ανάκτησης HR: $e");
       }
 
       // Ανάκτηση δεδομένων ύπνου
-      try{
-      final sleepData = await health.getHealthDataFromTypes(startTime: startTime, endTime: endTime, types: [HealthDataType.SLEEP_SESSION]);
-      if (sleepData.isNotEmpty) {
-        double totalMinutes = 0.0;
-        for (var data in sleepData) {
-          totalMinutes += (data.value as NumericHealthValue).numericValue.toDouble();
+      try {
+        final sleepData = await health.getHealthDataFromTypes(
+          startTime: startTime,
+          endTime: endTime,
+          types: [HealthDataType.SLEEP_SESSION],
+        );
+        if (sleepData.isNotEmpty) {
+          double totalMinutes = 0.0;
+          for (var data in sleepData) {
+            totalMinutes += (data.value as NumericHealthValue).numericValue
+                .toDouble();
+          }
+          sleepHours = totalMinutes / 60.0;
         }
-        sleepHours = totalMinutes / 60.0;
-      }}    catch(e){
+      } catch (e) {
         debugPrint("Σφάλμα ανάκτησης ύπνου: $e");
       }
     } catch (e) {

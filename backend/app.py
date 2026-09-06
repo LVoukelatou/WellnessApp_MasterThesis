@@ -84,7 +84,7 @@ def analyze_stress():
             
         return jsonify({"health_score": round(health_score, 1), "insight": insight}), 200 #επιστρέφουμε το αποτέλεσμα σε μορφή JSON, με το health_score στρογγυλοποιημένο στο πρώτο δεκαδικό ψηφίο
    
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print("Σφάλμα στον υπολογισμό:", e)
         return jsonify({"error": str(e)}), 400
 
@@ -107,7 +107,7 @@ def ai_coach():
         )
         reply = completion.choices[0].message.content # παίρνουμε την 1η από την λίστα απαντήσεων, το μήνυμά της και το περιεχόμενο κειμένου
         return jsonify({"reply": reply})
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print("Σφάλμα AI Coach:", e)
         return jsonify({"error": str(e)}), 500
     

@@ -5,7 +5,8 @@ class BreathingExerciseScreen extends StatefulWidget {
   const BreathingExerciseScreen({super.key});
 
   @override
-  State<BreathingExerciseScreen> createState() => _BreathingExerciseScreenState();
+  State<BreathingExerciseScreen> createState() =>
+      _BreathingExerciseScreenState();
 }
 
 enum BreathPhase { inhale, holdFull, exhale, holdEmpty }
@@ -13,7 +14,7 @@ enum BreathPhase { inhale, holdFull, exhale, holdEmpty }
 // Η οθόνη για την άσκηση αναπνοής
 class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller; 
+  late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   BreathPhase _currentPhase = BreathPhase.inhale;
@@ -34,12 +35,14 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      vsync: this, // συγχρονίζει το animation με τον ρυθμό ανανέωσης της οθόνης, και το σταματάει αυτόματα όταν η οθόνη δεν είναι ορατή
+      vsync:
+          this, // συγχρονίζει το animation με τον ρυθμό ανανέωσης της οθόνης, και το σταματάει αυτόματα όταν η οθόνη δεν είναι ορατή
       duration: const Duration(seconds: _phaseSeconds),
     );
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.5,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   // Ξεκινάει την άσκηση αναπνοής
@@ -51,6 +54,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
     });
     _runPhase();
   }
+
   // Σταματάει την άσκηση αναπνοής
   void _stopExercise() {
     _phaseTimer?.cancel();
@@ -90,6 +94,7 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
       _runPhase();
     });
   }
+
   // Επιστρέφει την επόμενη φάση της αναπνοής
   BreathPhase _nextPhase(BreathPhase current) {
     switch (current) {
@@ -177,11 +182,18 @@ class _BreathingExerciseScreenState extends State<BreathingExerciseScreen>
                         : const Color.fromARGB(255, 25, 96, 25),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
-                    _isRunning ? 'Σταμάτα όποτε θες' : 'Ξεκίνα όταν είσαι έτοιμος/η',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    _isRunning
+                        ? 'Σταμάτα όποτε θες'
+                        : 'Ξεκίνα όταν είσαι έτοιμος/η',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

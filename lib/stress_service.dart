@@ -22,7 +22,7 @@ class StressService {
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .get();
     final goals = (userDoc.data()?['goals'] as Map<String, dynamic>?) ?? {};
-    
+
     return await _apiService.predictStress(
       isMorning: isMorning,
       vibeCheck1: v1,

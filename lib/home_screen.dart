@@ -7,64 +7,93 @@ import 'stress_ring.dart'; // Για το κύκλο του επιπέδου σ�
 import 'pss10FollowUp_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key); // Constructor για το HomeScreen
+  const HomeScreen({super.key}); // Constructor για το HomeScreen
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState(); // private state class για το HomeScreen 
+  State<HomeScreen> createState() => _HomeScreenState(); // private state class για το HomeScreen
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _isMorning = true; //Ελέγχουμε αν είναι πρωί ή απόγευμα, για να αλλάζει το κείμενο και οι ερωτήσεις ανάλογα
-  bool _isCurrentCheckInOK = false; //Ελέγχουμε αν ο χρήστης έχει κάνει check-in σήμερα
+  bool _isMorning =
+      true; //Ελέγχουμε αν είναι πρωί ή απόγευμα, για να αλλάζει το κείμενο και οι ερωτήσεις ανάλογα
+  bool _isCurrentCheckInOK =
+      false; //Ελέγχουμε αν ο χρήστης έχει κάνει check-in σήμερα
 
   // Αρχικοποίηση των τιμών για τα vibe checks με μια μέση τιμή 2
-  int _vibeCheck1 = 2; 
+  int _vibeCheck1 = 2;
   int _vibeCheck2 = 2;
   int _vibeCheck3 = 2;
-  
+
   // Μεταβλητές για την αποθήκευση των δεδομένων υγείας που θα ανακτηθούν από το Health Connect
   bool _permissionsGranted = false;
   int? _actualSteps; // nullable στην περίπτωση που δεν υπάρχουν δεδομένα
   double? _actualHRV;
-  double? _actualHeartRate; 
+  double? _actualHeartRate;
   double? _actualSleepHours;
-  
+
   // Μεταβλητές για την πρόβλεψη του επιπέδου στρες από το Flask API
   bool _isLoading = false;
-  double _backendPredictedStress = 0.0; // Η πρόβλεψη του επιπέδου στρες που λαμβάνουμε από το Flask API
-  String _backendInsight = ''; // Η ερμηνεία της πρόβλεψης που λαμβάνουμε από το Flask API
-  
+  double _backendPredictedStress =
+      0.0; // Η πρόβλεψη του επιπέδου στρες που λαμβάνουμε από το Flask API
+  String _backendInsight =
+      ''; // Η ερμηνεία της πρόβλεψης που λαμβάνουμε από το Flask API
+
   //Ημέρες και μήνες στα Ελληνικά και live ώρα για το header της οθόνης
   final List<String> _days = [
-    'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο', 'Κυριακή',
+    'Δευτέρα',
+    'Τρίτη',
+    'Τετάρτη',
+    'Πέμπτη',
+    'Παρασκευή',
+    'Σάββατο',
+    'Κυριακή',
   ];
 
   final List<String> _months = [
-    'Ιανουαρίου', 'Φεβρουαρίου', 'Μαρτίου', 'Απριλίου', 'Μαΐου', 'Ιουνίου',
-    'Ιουλίου', 'Αυγούστου', 'Σεπτεμβρίου', 'Οκτωβρίου', 'Νοεμβρίου', 'Δεκεμβρίου',
+    'Ιανουαρίου',
+    'Φεβρουαρίου',
+    'Μαρτίου',
+    'Απριλίου',
+    'Μαΐου',
+    'Ιουνίου',
+    'Ιουλίου',
+    'Αυγούστου',
+    'Σεπτεμβρίου',
+    'Οκτωβρίου',
+    'Νοεμβρίου',
+    'Δεκεμβρίου',
   ];
 
-  String get _dayName => _days[DateTime.now().weekday - 1]; // Λαμβάνουμε το όνομα της ημέρας από τη λίστα days, αφαιρώντας 1 γιατί η μέθοδος weekday επιστρέφει τιμές από 1 (Δευτέρα) έως 7 (Κυριακή) και θέλουμε αντιστοιχία με τον πίνακα που ξεκινάει από το 0
-  String get _monthName => _months[DateTime.now().month - 1]; // αντίστοιχα του μήνα
-  String get _formattedDate => '$_dayName, ${DateTime.now().day} $_monthName'; // μορφοποιημένη ημερομηνία για το header της οθόνης, π.χ. "Δευτέρα, 1 Ιανουαρίου"
-
+  String get _dayName =>
+      _days[DateTime.now().weekday -
+          1]; // Λαμβάνουμε το όνομα της ημέρας από τη λίστα days, αφαιρώντας 1 γιατί η μέθοδος weekday επιστρέφει τιμές από 1 (Δευτέρα) έως 7 (Κυριακή) και θέλουμε αντιστοιχία με τον πίνακα που ξεκινάει από το 0
+  String get _monthName =>
+      _months[DateTime.now().month - 1]; // αντίστοιχα του μήνα
+  String get _formattedDate =>
+      '$_dayName, ${DateTime.now().day} $_monthName'; // μορφοποιημένη ημερομηνία για το header της οθόνης, π.χ. "Δευτέρα, 1 Ιανουαρίου"
 
   @override
   void initState() {
     super.initState();
     // Υπολογίζουμε αν είναι πρωί (από τις 5 μέχρι τις 14 γιατί μπορεί κάποιος να ξεκινάει δουλειά αργά) ή απόγευμα μόλις ανοίγει η οθόνη
-    _isMorning =  DateTime.now().hour >= 5 && DateTime.now().hour < 14;
-    WidgetsBinding.instance.addPostFrameCallback((context) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    _fetchAndSyncStarting();}); // Καλούμε τη μέθοδο για να ανακτήσουμε τα δεδομένα υγείας και να ενημερώσουμε τις μεταβλητές της οθόνης
+    _isMorning = DateTime.now().hour >= 5 && DateTime.now().hour < 14;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (context) async {
+        await Future.delayed(const Duration(milliseconds: 300));
+        _fetchAndSyncStarting();
+      },
+    ); // Καλούμε τη μέθοδο για να ανακτήσουμε τα δεδομένα υγείας και να ενημερώσουμε τις μεταβλητές της οθόνης
     _hasCompletedCurrentCheckIn();
     _checkForPss10FollowUp();
   }
 
   //Μέθοδος που ελέγχει εάν έχει περάσει ένας μήνας από την συμπλήρωση του PSS-10 για να το επαναεμφανίσει στον χρήστη
-  Future <void> _checkForPss10FollowUp() async{
+  Future<void> _checkForPss10FollowUp() async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final data = doc.data();
 
     final pssBaseline = data?['pss_baseline'] as Map<String, dynamic>?;
@@ -72,49 +101,63 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // δεν υπάρχει baseline ή το follow up έγινε ήδη
     if (pssBaseline == null || pssFollowup != null) {
-    return; 
+      return;
     }
-  
-    final Timestamp? completedAt = pssBaseline ['completed_at'] as Timestamp?;
+
+    final Timestamp? completedAt = pssBaseline['completed_at'] as Timestamp?;
     if (completedAt == null) return;
 
-    final daysSinceBaseline = DateTime.now().difference(completedAt.toDate()).inDays;
+    final daysSinceBaseline = DateTime.now()
+        .difference(completedAt.toDate())
+        .inDays;
 
     if (daysSinceBaseline >= 30 && mounted) {
-    _showPss10FollowUpDialog();
+      _showPss10FollowUpDialog();
     }
   }
 
   void _showPss10FollowUpDialog() {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text('Πέρασε περίπου ένας μήνας από τότε που ξεκίνησες να χρησιμοποιείς την εφαρμογή!'),
-      content: const Text('Θα ήθελες να δούμε μαζί πώς έχει αλλάξει η αίσθηση ελέγχου και πίεσης που νιώθεις στην καθημερινότητά σου τον τελευταίο μήνα;'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Αργότερα'),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Πέρασε περίπου ένας μήνας από τότε που ξεκίνησες να χρησιμοποιείς την εφαρμογή!',
         ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const Pss10FollowUpSsceen()));
-          },
-          child: const Text('Ξεκίνα'),
+        content: const Text(
+          'Θα ήθελες να δούμε μαζί πώς έχει αλλάξει η αίσθηση ελέγχου και πίεσης που νιώθεις στην καθημερινότητά σου τον τελευταίο μήνα;',
         ),
-      ],
-    ),
-  );
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Αργότερα'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const Pss10FollowUpSsceen(),
+                ),
+              );
+            },
+            child: const Text('Ξεκίνα'),
+          ),
+        ],
+      ),
+    );
   }
 
   // Μέθοδος που ανακτά τα δεδομένα υγείας από το HealthService και ενημερώνει τις μεταβλητές της οθόνης
   Future<void> _fetchAndSyncStarting() async {
     try {
-      final healthData = await HealthService.fetchHealthData(); // Καλούμε τη μέθοδο fetchHealthData από το HealthService 
-      if (!mounted) return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν ενημερώνουμε το state για να αποφύγουμε σφάλματα
-      
+      final healthData =
+          await HealthService.fetchHealthData(); // Καλούμε τη μέθοδο fetchHealthData από το HealthService
+      if (!mounted) {
+        return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν ενημερώνουμε το state για να αποφύγουμε σφάλματα
+      }
+
       setState(() {
         // Ενημερώνουμε τις μεταβλητές με τα δεδομένα που ανακτήθηκαν, αν δεν υπάρχουν δεδομένα τις αφήνουμε null
         bool hasPermissions = healthData['permissionsGranted'] == true;
@@ -126,59 +169,76 @@ class _HomeScreenState extends State<HomeScreen> {
           _actualSleepHours = healthData['sleepHours'];
         } else {
           _permissionsGranted = false;
-        } 
+        }
       });
 
       if (_permissionsGranted) {
-       final userDoc = await FirebaseFirestore.instance
+        final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(FirebaseAuth.instance.currentUser!.uid)
             .get();
         final goals = (userDoc.data()?['goals'] as Map<String, dynamic>?) ?? {};
         final apiService = ApiService();
         final result = await apiService.predictStress(
-        isMorning: _isMorning,
-        vibeCheck1: 2,
-        vibeCheck2: 2,
-        vibeCheck3: 2,
-        steps: _actualSteps,
-        sleepHours: _actualSleepHours,
-        heartRate: _actualHeartRate,
-        hrv: _actualHRV,
-        stepsTarget: (goals['steps'] as num?)?.toDouble() ?? 10000,
-        sleepTarget: (goals['sleep_hours'] as num?)?.toDouble() ?? 8.0,
-        hrTarget: (goals['heart_rate'] as num?)?.toDouble() ?? 70,
-        hrvTarget: (goals['hrv'] as num?)?.toDouble() ?? 50,
-      );
+          isMorning: _isMorning,
+          vibeCheck1: 2,
+          vibeCheck2: 2,
+          vibeCheck3: 2,
+          steps: _actualSteps,
+          sleepHours: _actualSleepHours,
+          heartRate: _actualHeartRate,
+          hrv: _actualHRV,
+          stepsTarget: (goals['steps'] as num?)?.toDouble() ?? 10000,
+          sleepTarget: (goals['sleep_hours'] as num?)?.toDouble() ?? 8.0,
+          hrTarget: (goals['heart_rate'] as num?)?.toDouble() ?? 70,
+          hrvTarget: (goals['hrv'] as num?)?.toDouble() ?? 50,
+        );
 
-      setState(() {
-        _backendPredictedStress = (result['health_score'] as num?)?.toDouble() ?? 0.0; // Λαμβάνουμε την πρόβλεψη στρες από το API και την μετατρέπουμε σε double, αν δεν υπάρχει, θέτουμε 0.0
-        _backendInsight = result['insight'] ?? ''; // Λαμβάνουμε την ερμηνεία της πρόβλεψης από το API
-      });
+        setState(() {
+          _backendPredictedStress =
+              (result['health_score'] as num?)?.toDouble() ??
+              0.0; // Λαμβάνουμε την πρόβλεψη στρες από το API και την μετατρέπουμε σε double, αν δεν υπάρχει, θέτουμε 0.0
+          _backendInsight =
+              result['insight'] ??
+              ''; // Λαμβάνουμε την ερμηνεία της πρόβλεψης από το API
+        });
 
-      await FirebaseFirestore.instance.collection('users')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
-          .collection('check_ins')
-          .add({
-        'timestamp': FieldValue.serverTimestamp(),
-        'is_morning': _isMorning,
-        'is_autoSync': true, // Προσθέτουμε ένα πεδίο για να δείξουμε ότι αυτά τα δεδομένα είναι από αυτόματο συγχρονισμό
-        'vibe_data': { 'v1':2, 'v2':2, 'v3': 2 },
-        'health_data': { 'steps': _actualSteps, 'heart_rate': _actualHeartRate, 'sleep_hours': _actualSleepHours, 'hrv': _actualHRV },
-        'stress_score': _backendPredictedStress,
-        'insight': _backendInsight,
-      });
-      debugPrint('Ο αυτόματος συγχρονισμός και ο υπολογισμός του stress score είναι οκ');
-          } else {
-        debugPrint('Δεν δόθηκαν οι απαραίτητες άδειες πρόσβασης στα δεδομένα υγείας.');
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection('check_ins')
+            .add({
+              'timestamp': FieldValue.serverTimestamp(),
+              'is_morning': _isMorning,
+              'is_autoSync':
+                  true, // Προσθέτουμε ένα πεδίο για να δείξουμε ότι αυτά τα δεδομένα είναι από αυτόματο συγχρονισμό
+              'vibe_data': {'v1': 2, 'v2': 2, 'v3': 2},
+              'health_data': {
+                'steps': _actualSteps,
+                'heart_rate': _actualHeartRate,
+                'sleep_hours': _actualSleepHours,
+                'hrv': _actualHRV,
+              },
+              'stress_score': _backendPredictedStress,
+              'insight': _backendInsight,
+            });
+        debugPrint(
+          'Ο αυτόματος συγχρονισμός και ο υπολογισμός του stress score είναι οκ',
+        );
+      } else {
+        debugPrint(
+          'Δεν δόθηκαν οι απαραίτητες άδειες πρόσβασης στα δεδομένα υγείας.',
+        );
       }
     } catch (e) {
       debugPrint('Σφάλμα κατά την ανάκτηση δεδομένων υγείας: $e');
       setState(() {
-        _permissionsGranted = false; // Αν υπάρχει σφάλμα, σημαίνει ότι δεν έχουμε άδεια πρόσβασης
+        _permissionsGranted =
+            false; // Αν υπάρχει σφάλμα, σημαίνει ότι δεν έχουμε άδεια πρόσβασης
       });
     }
   }
+
   // Μέθοδος που επεξεργάζεται το check-in, καλεί το Flask API για πρόβλεψη στρες και αποθηκεύει τα δεδομένα στο Firestore
   Future<void> _processCheckIN() async {
     setState(() {
@@ -186,11 +246,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      final apiService = ApiService(); // Δημιουργούμε ένα instance του ApiService για να καλέσουμε το Flask API
+      final apiService =
+          ApiService(); // Δημιουργούμε ένα instance του ApiService για να καλέσουμε το Flask API
       final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .get();
+          .collection('users')
+          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .get();
       final goals = (userDoc.data()?['goals'] as Map<String, dynamic>?) ?? {};
       final result = await apiService.predictStress(
         isMorning: _isMorning,
@@ -205,35 +266,52 @@ class _HomeScreenState extends State<HomeScreen> {
         sleepTarget: (goals['sleep_hours'] as num?)?.toDouble() ?? 8.0,
         hrTarget: (goals['heart_rate'] as num?)?.toDouble() ?? 70,
         hrvTarget: (goals['hrv'] as num?)?.toDouble() ?? 50,
-    );
+      );
 
       setState(() {
-        _backendPredictedStress = (result['health_score'] as num?)?.toDouble() ?? 0.0; // Λαμβάνουμε την πρόβλεψη στρες από το API και την μετατρέπουμε σε double, αν δεν υπάρχει, θέτουμε 0.0
-        _backendInsight = result['insight'] ?? ''; // Λαμβάνουμε την ερμηνεία της πρόβλεψης από το API
+        _backendPredictedStress =
+            (result['health_score'] as num?)?.toDouble() ??
+            0.0; // Λαμβάνουμε την πρόβλεψη στρες από το API και την μετατρέπουμε σε double, αν δεν υπάρχει, θέτουμε 0.0
+        _backendInsight =
+            result['insight'] ??
+            ''; // Λαμβάνουμε την ερμηνεία της πρόβλεψης από το API
       });
 
-      await FirebaseFirestore.instance.collection('users')
+      await FirebaseFirestore.instance
+          .collection('users')
           .doc(FirebaseAuth.instance.currentUser!.uid)
           .collection('check_ins')
           .add({
-        'timestamp': FieldValue.serverTimestamp(),
-        'is_morning': _isMorning,
-        'vibe_data': { 'v1': _vibeCheck1, 'v2': _vibeCheck2, 'v3': _vibeCheck3 },
-        'health_data': { 'steps': _actualSteps, 'heart_rate': _actualHeartRate, 'sleep_hours': _actualSleepHours, 'hrv': _actualHRV },
-        'stress_score': _backendPredictedStress,
-        'insight': _backendInsight,
-      });
-      if (!mounted) return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν εμφανίζουμε το SnackBar για να αποφύγουμε σφάλματα
+            'timestamp': FieldValue.serverTimestamp(),
+            'is_morning': _isMorning,
+            'vibe_data': {
+              'v1': _vibeCheck1,
+              'v2': _vibeCheck2,
+              'v3': _vibeCheck3,
+            },
+            'health_data': {
+              'steps': _actualSteps,
+              'heart_rate': _actualHeartRate,
+              'sleep_hours': _actualSleepHours,
+              'hrv': _actualHRV,
+            },
+            'stress_score': _backendPredictedStress,
+            'insight': _backendInsight,
+          });
+      if (!mounted) {
+        return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν εμφανίζουμε το SnackBar για να αποφύγουμε σφάλματα
+      }
       setState(() {
-        _isCurrentCheckInOK = true; 
+        _isCurrentCheckInOK = true;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Το Check-in αποθηκεύτηκε!')),
-      );
-
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Το Check-in αποθηκεύτηκε!')));
     } catch (e) {
       debugPrint('Σφάλμα κατά την επεξεργασία του check-in: $e');
-      if (!mounted) return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν εμφανίζουμε το SnackBar για να αποφύγουμε σφάλματα
+      if (!mounted) {
+        return; // αν έχει φύγει ο χρήστης από την οθόνη, δεν εμφανίζουμε το SnackBar για να αποφύγουμε σφάλματα
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Σφάλμα κατά την επεξεργασία του check-in: $e')),
       );
@@ -243,45 +321,61 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
   // Μέθοδος που ανανεώνει τα δεδομένα όταν ο χρήστης κάνει pull-to-refresh
   Future<void> _refreshData() async {
     await _fetchAndSyncStarting(); // Ανακτούμε ξανά τα δεδομένα υγείας και ενημερώνουμε τις μεταβλητές της οθόνης
     await _hasCompletedCurrentCheckIn(); // Ελέγχουμε ξανά αν ο χρήστης έχει κάνει check-in για την τρέχουσα περίοδο
-    await Future.delayed(const Duration(seconds: 1)); //κάνουμε ένα μικρό delay για να φαίνεται το refresh indicator
+    await Future.delayed(
+      const Duration(seconds: 1),
+    ); //κάνουμε ένα μικρό delay για να φαίνεται το refresh indicator
   }
+
   // Μέθοδος που ελέγχει αν ο χρήστης έχει κάνει check-in για την τρέχουσα περίοδο (πρωί ή απόγευμα)
   Future<void> _hasCompletedCurrentCheckIn() async {
     final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day); // Ξεκινάμε από τις 00:00 της τρέχουσας ημέρας
+    final startOfDay = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ); // Ξεκινάμε από τις 00:00 της τρέχουσας ημέρας
 
     final querySnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
         .collection('check_ins')
-        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .where(
+          'timestamp',
+          isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay),
+        )
         .get();
-    
+
     bool foundCurrentPeriodCheckIn = false;
     for (var doc in querySnapshot.docs) {
       final data = doc.data();
-      bool isManual = data['is_autoSync'] == null || data['is_autoSync'] == false; // Ελέγχουμε αν το check-in είναι χειροκίνητο (manual) ή αυτόματο (autoSync). Αν δεν υπάρχει το πεδίο is_autoSync, θεωρούμε ότι είναι χειροκίνητο.
-      if (isManual && data['is_morning'] == _isMorning) // Ελέγχουμε αν το check-in είναι για την τρέχουσα περίοδο (πρωί ή απόγευμα)
+      bool isManual =
+          data['is_autoSync'] == null ||
+          data['is_autoSync'] ==
+              false; // Ελέγχουμε αν το check-in είναι χειροκίνητο (manual) ή αυτόματο (autoSync). Αν δεν υπάρχει το πεδίο is_autoSync, θεωρούμε ότι είναι χειροκίνητο.
+      if (isManual &&
+          data['is_morning'] ==
+              _isMorning) // Ελέγχουμε αν το check-in είναι για την τρέχουσα περίοδο (πρωί ή απόγευμα)
       {
         foundCurrentPeriodCheckIn = true;
         break;
       }
     }
-      if (mounted) {
-        setState(() {
-          _isCurrentCheckInOK = foundCurrentPeriodCheckIn;
-        });
+    if (mounted) {
+      setState(() {
+        _isCurrentCheckInOK = foundCurrentPeriodCheckIn;
+      });
     }
   }
 
   // Μέθοδος που επιστρέφει μήνυμα καλωσορίσματος ανάλογα με την ώρα της ημέρας
   String get _dynamicGreeting {
     final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) {
+    if (hour >= 5 && hour < 14) {
       return 'Καλημέρα ☀️';
     } else if (hour < 18) {
       return 'Καλό απόγευμα ☕';
@@ -292,23 +386,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Μέθοδος που επιστρέφει μήνυμα ενθάρρυνσης για το check-in ανάλογα με την ώρα της ημέρας
   String get _checkInMotivation {
-  if (_isMorning) {
-    return 'Μια νέα μέρα ξεκινά! Αφιέρωσε 1 λεπτό για να δούμε πώς είναι η ενέργειά σου σήμερα.';
-  } else {
-    return 'Η μέρα φτάνει στο τέλος της... Ώρα να αφήσεις την πίεση πίσω σου και να κάνεις μια γρήγορη αποτίμηση.';
-  }
+    if (_isMorning) {
+      return 'Μια νέα μέρα ξεκινά! Αφιέρωσε 1 λεπτό για να δούμε πώς είναι η ενέργειά σου σήμερα.';
+    } else {
+      return 'Η μέρα φτάνει στο τέλος της... Ώρα να αφήσεις την πίεση πίσω σου και να κάνεις μια γρήγορη αποτίμηση.';
+    }
   }
 
   // Μέθοδος που εμφανίζει το dialog για το vibe check
   Future<void> _showVibeCheckDialog() async {
-
     await showDialog(
       context: context,
-      barrierDismissible: false, // Αποτρέπουμε το κλείσιμο του dialog με tap έξω από αυτό
+      barrierDismissible:
+          false, // Αποτρέπουμε το κλείσιμο του dialog με tap έξω από αυτό
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            
             // Μέθοδος που δημιουργεί ένα κουτί επιλογής για τις ερωτήσεις του vibe check
             Widget buildChoiceBox({
               required String text,
@@ -317,21 +410,30 @@ class _HomeScreenState extends State<HomeScreen> {
               required Function(int) onChanged,
             }) {
               final isSelected = value == groupValue;
-              
+
               return Expanded(
                 child: GestureDetector(
                   onTap: () => setDialogState(() => onChanged(value)),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                    padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12.0,
+                      horizontal: 4.0,
+                    ),
                     decoration: BoxDecoration(
-                      color: isSelected ? Color.fromARGB(255, 6, 37, 8).withValues(alpha: 0.1) : Colors.transparent,
+                      color: isSelected
+                          ? Color.fromARGB(255, 6, 37, 8).withValues(alpha: 0.1)
+                          : Colors.transparent,
                       border: Border.all(
                         // Γκρι αν δεν είναι επιλεγμένο, πράσινο αν είναι επιλεγμένο
-                        color: isSelected ? Color.fromARGB(255, 6, 37, 8) : Colors.grey.shade400,
+                        color: isSelected
+                            ? Color.fromARGB(255, 6, 37, 8)
+                            : Colors.grey.shade400,
                         width: isSelected ? 2.0 : 1.0,
                       ),
-                      borderRadius: BorderRadius.circular(12.0), // Στρογγυλεμένες γωνίες
+                      borderRadius: BorderRadius.circular(
+                        12.0,
+                      ), // Στρογγυλεμένες γωνίες
                     ),
                     alignment: Alignment.center,
                     child: Text(
@@ -339,17 +441,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: isSelected ? Color.fromARGB(255, 6, 37, 8) : Colors.black87,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isSelected
+                            ? Color.fromARGB(255, 6, 37, 8)
+                            : Colors.black87,
                       ),
                     ),
                   ),
                 ),
               );
             }
+
             // Επιστρέφουμε το AlertDialog με τις ερωτήσεις και τα κουτιά επιλογής
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Text(
                 _isMorning ? 'Πρωινό Check-in' : 'Απογευματινό Check-in',
                 textAlign: TextAlign.center,
@@ -360,25 +469,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // 1η ερώτηση ανάλογα με το αν είναι πρωί ή απόγευμα
                     Text(
-                      _isMorning 
-                        ? '1. Πώς νιώθεις ξεκινώντας τη μέρα σου;' 
-                        : '1. Πώς νιώθεις τώρα που τελείωσε ο κύριος όγκος δουλειάς;',
+                      _isMorning
+                          ? '1. Πώς νιώθεις ξεκινώντας τη μέρα σου;'
+                          : '1. Πώς νιώθεις τώρα που τελείωσε ο κύριος όγκος δουλειάς;',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 10),
                     Row(
                       children: [
                         buildChoiceBox(
-                          text: _isMorning ? 'Χαλαρά' : 'Ανακουφισμένα', //αν είναι πρωί, εμφανίζει το πρώτο κείμενο, αν είναι απόγευμα, εμφανίζει το δεύτερο
-                          value: 1, groupValue: _vibeCheck1, onChanged: (val) => _vibeCheck1 = val, //παίρνει την τιμή του κουτιού και την αναθέτει στη μεταβλητή _vibeCheck1
+                          text: _isMorning
+                              ? 'Χαλαρά'
+                              : 'Ανακουφισμένα', //αν είναι πρωί, εμφανίζει το πρώτο κείμενο, αν είναι απόγευμα, εμφανίζει το δεύτερο
+                          value: 1,
+                          groupValue: _vibeCheck1,
+                          onChanged: (val) => _vibeCheck1 =
+                              val, //παίρνει την τιμή του κουτιού και την αναθέτει στη μεταβλητή _vibeCheck1
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Πιεσμένα' : 'Στην τσίτα',
-                          value: 2, groupValue: _vibeCheck1, onChanged: (val) => _vibeCheck1 = val,
+                          value: 2,
+                          groupValue: _vibeCheck1,
+                          onChanged: (val) => _vibeCheck1 = val,
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Αγχωμένα' : 'Είμαι πτώμα',
-                          value: 3, groupValue: _vibeCheck1, onChanged: (val) => _vibeCheck1 = val,
+                          value: 3,
+                          groupValue: _vibeCheck1,
+                          onChanged: (val) => _vibeCheck1 = val,
                         ),
                       ],
                     ),
@@ -388,9 +506,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // 2η ερώτηση ανάλογα με το αν είναι πρωί ή απόγευμα
                     Text(
-                      _isMorning 
-                        ? '2. Πόσο βαρύ είναι το σημερινό πρόγραμμα;' 
-                        : '2. Νιώθεις σωματική ένταση (π.χ. αυχένα/μέση);',
+                      _isMorning
+                          ? '2. Πόσο βαρύ είναι το σημερινό πρόγραμμα;'
+                          : '2. Νιώθεις σωματική ένταση (π.χ. αυχένα/μέση);',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 10),
@@ -398,15 +516,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         buildChoiceBox(
                           text: _isMorning ? 'Ελαφρύ' : 'Καθόλου',
-                          value: 1, groupValue: _vibeCheck2, onChanged: (val) => _vibeCheck2 = val,
+                          value: 1,
+                          groupValue: _vibeCheck2,
+                          onChanged: (val) => _vibeCheck2 = val,
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Μέτριο' : 'Λιγάκι',
-                          value: 2, groupValue: _vibeCheck2, onChanged: (val) => _vibeCheck2 = val,
+                          value: 2,
+                          groupValue: _vibeCheck2,
+                          onChanged: (val) => _vibeCheck2 = val,
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Φουλ' : 'Αρκετά',
-                          value: 3, groupValue: _vibeCheck2, onChanged: (val) => _vibeCheck2 = val,
+                          value: 3,
+                          groupValue: _vibeCheck2,
+                          onChanged: (val) => _vibeCheck2 = val,
                         ),
                       ],
                     ),
@@ -416,9 +540,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     // 3η ερώτηση ανάλογα με το αν είναι πρωί ή απόγευμα
                     Text(
-                      _isMorning 
-                        ? '3. Πώς ξύπνησες;' 
-                        : '3. Πόσο εύκολο σου είναι να αποσυνδεθείς τώρα;',
+                      _isMorning
+                          ? '3. Πώς ξύπνησες;'
+                          : '3. Πόσο εύκολο σου είναι να αποσυνδεθείς τώρα;',
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 10),
@@ -426,15 +550,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         buildChoiceBox(
                           text: _isMorning ? 'Γεμάτος/η ενέργεια' : 'Εύκολο',
-                          value: 1, groupValue: _vibeCheck3, onChanged: (val) => _vibeCheck3 = val,
+                          value: 1,
+                          groupValue: _vibeCheck3,
+                          onChanged: (val) => _vibeCheck3 = val,
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Θέλω καφέ' : 'Το παλεύω',
-                          value: 2, groupValue: _vibeCheck3, onChanged: (val) => _vibeCheck3 = val,
+                          value: 2,
+                          groupValue: _vibeCheck3,
+                          onChanged: (val) => _vibeCheck3 = val,
                         ),
                         buildChoiceBox(
                           text: _isMorning ? 'Εξαντλημένος/η' : 'Αδύνατον',
-                          value: 3, groupValue: _vibeCheck3, onChanged: (val) => _vibeCheck3 = val,
+                          value: 3,
+                          groupValue: _vibeCheck3,
+                          onChanged: (val) => _vibeCheck3 = val,
                         ),
                       ],
                     ),
@@ -447,13 +577,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color.fromARGB(255, 6, 37, 8),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 12,
+                      ),
                     ),
                     onPressed: () {
                       Navigator.pop(context); // Κλείνει το dialog
-                      _processCheckIN(); // Καλεί τη μέθοδο για να επεξεργαστεί το check-in 
+                      _processCheckIN(); // Καλεί τη μέθοδο για να επεξεργαστεί το check-in
                     },
-                    child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text('Αποθήκευση', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            'Αποθήκευση',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                   ),
                 ),
               ],
@@ -475,7 +613,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _formattedDate, 
+              _formattedDate,
               style: const TextStyle(
                 fontFamily: 'Google Sans',
                 fontSize: 15,
@@ -502,57 +640,62 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               if (!_isCurrentCheckInOK)
-              Card(
-                elevation: 0,
-                color: Colors.transparent, 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  side: const BorderSide(
-                    color: Color.fromARGB(255, 25, 96, 25), 
-                    width: 1.5, 
+                Card(
+                  elevation: 0,
+                  color: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    side: const BorderSide(
+                      color: Color.fromARGB(255, 25, 96, 25),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const SizedBox(width: double.infinity, height: 10),
+                        Text(
+                          _checkInMotivation,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Color.fromARGB(255, 6, 37, 8),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _showVibeCheckDialog,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              25,
+                              96,
+                              25,
+                            ),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.0,
+                                  ),
+                                )
+                              : const Text('Κάνε Check-in'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(width: double.infinity, height: 10),
-                      Text(
-                        _checkInMotivation,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Color.fromARGB(255, 6, 37, 8),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: _isLoading ? null : _showVibeCheckDialog,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 25, 96, 25),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.0,
-                              ),
-                            )
-                          : const Text('Κάνε Check-in'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
+
               const SizedBox(height: 20), // Λίγο κενό
-              
+
               StressRing(stressScore: _backendPredictedStress),
+
               //const StressChart(),
-              
               const SizedBox(height: 20),
 
               if (_backendInsight.isNotEmpty)
@@ -561,16 +704,31 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
-                    side: BorderSide(color: Color.fromARGB(255, 25, 96, 25), width: 1.5),
+                    side: BorderSide(
+                      color: Color.fromARGB(255, 25, 96, 25),
+                      width: 1.5,
+                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Μια μικρή υπενθύμιση 💡', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Μια μικρή υπενθύμιση 💡',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 10),
-                        Text(_backendInsight, style: TextStyle(fontSize: 14, color: Colors.grey.shade800)),
+                        Text(
+                          _backendInsight,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
                       ],
                     ),
                   ),

@@ -59,7 +59,10 @@ class RelaxScreen extends StatelessWidget {
       color: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16.0),
-        side: const BorderSide(color: Color.fromARGB(255, 25, 96, 25), width: 1.5),
+        side: const BorderSide(
+          color: Color.fromARGB(255, 25, 96, 25),
+          width: 1.5,
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
